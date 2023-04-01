@@ -3,3 +3,4 @@ config.py
 *.log
 tips.txt
 *.db
+nohup.out

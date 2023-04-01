@@ -2,7 +2,6 @@
 
 import sqlite3
 import classes
-from array import array
 
 import os
 

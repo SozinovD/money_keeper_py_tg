@@ -1,6 +1,3 @@
-import classes
-import db_connector as db
-
 help_msg = '''
 This bot helps you to track your money usage
 There are commands below:
