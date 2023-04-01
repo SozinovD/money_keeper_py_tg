@@ -92,7 +92,7 @@ def start(message):
     # bot.register_next_step_handler(message, do_show_report)
 
   if message.text == '/show_all':
-    bot.send_message(message.from_user.id, 'Sending all records, one by one')
+    bot.send_message(message.from_user.id, 'Sending your records, one by one')
     for record in db.get_recs_user(db_filename, message.from_user.id):
       print(record)
       if record == True:
