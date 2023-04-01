@@ -7,7 +7,7 @@
 
 * /help - show help page
 * /add_record - add new income or expense record
-* /show_report - generate report (will be avalible in v2 and above)
+* /generate_report - generate report (will be avalible in v2 and above)
 
 ## БД
 ### Таблицы
