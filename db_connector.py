@@ -136,13 +136,13 @@ def get_recs_all(db_filename):
 def get_recs_user(db_filename, user_id):
   ''' Return record selected by 'field':'value' for one user_id in array
       arr[0] will be result (True/False, False if records were not found) '''
-  rec_select_arr = []
-  filters_str = ''
-  filters_str = 'user_id=' + '"' + str(user_id) + '"'
-  for rec in select(db_filename, 'records', '*', filters_str):
-    rec_obj = rec_to_obj(rec)
-    rec_select_arr.append(rec_obj)
-  return rec_select_arr
+  rec_user_arr = []
+  for rec in get_recs_all(db_filename):
+    if type(rec) == bool:
+      continue
+    if rec.user_id == user_id:
+      rec_user_arr.append(rec)
+  return rec_user_arr
 
 # if __name__ == '__main__':
   # print(select(db_filename, 'records', '*', 'user_id="123456"'))
