@@ -23,4 +23,4 @@ tables_arr = [ table_cat, table_curr, table_rec ]
 default_cats_arr = [['Salary', 'income'], ['Sell', 'income'], ['Other', 'income'], \
                     ['Food', 'expense'], ['Clothes', 'expense'],  ['Fun', 'expense'], ['Other', 'expense']]
 
-default_currs_arr = ['RUR', 'KZT', 'DKK', 'RUR']
+default_currs_arr = ['RUR', 'KZT', 'DKK']
