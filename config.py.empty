@@ -1,0 +1,2 @@
+api_key = '<TELEGRAM_API_KEY_FROM_BOTFATHER>'
+admin_id = '<ADMIN_USER_ID>'
