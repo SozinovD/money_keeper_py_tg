@@ -12,12 +12,3 @@ There are commands below:
 
 def get_help_msg():
   return help_msg
-
-def get_cat_obj_by_name(name):
-  '''
-  Get category object by category name
-  '''
-  cats = db.get_cats_arr()
-  for cat in cats:
-    if cat.name == name:
-      return cat
