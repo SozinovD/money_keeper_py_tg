@@ -2,115 +2,43 @@
 
 import os
 import sys
-import sqlite3
-
-from dataclasses import dataclass
+import time
 
 import telebot
 from telebot import types
 
 from config import api_key
 from config import admin_id
+from config import db_filename
+
+import functions as funcs
+import db_connector as db
+
+import classes
 
 bot = telebot.TeleBot(api_key)
 
-@dataclass
-class Category():
-  type: str
-  name: str
-
-  def __init__(self, name: str, type: str):
-    self.type = str(type)
-    self.name = str(name)
-
-
-@dataclass
-class Record:
-  seq_num: int
-  user_id: int
-  type: str
-  category: str
-  date_ts: int
-  currency: str
-  amount: int
-  comment: str
-  
-  def __init__(self, seq_num: int):
-    self.seq_num = int(seq_num)
-
-  def set_user_id(self, user_id: int):
-    self.user_id = int(user_id)
-
-  def set_cat(self, category:Category):
-    self.category = str(category.name)
-    self.type = str(category.type)
-
-  def set_date(self, date_ts: int):
-    self.date_ts = int(date_ts)
-
-  def set_currency(self, currency: str):
-    self.currency = str(currency)
-
-  def set_amount(self, amount: int):
-    self.amount = int(amount)
-
-  def set_comment(self, comment: str):
-    self.comment = str(comment)
-
-
-help_msg = '''
-This bot helps you to track your money usage
-There are commands below:
-
-/help - show this help page
-/add_record - add new income or expense record
-/show_report - generate report (will be avalible in v2 and above)
-'''
-
-cat_arr = [['Salary', 'income'], ['Sell', 'income'], ['Other', 'income'], \
-            ['Food', 'expence'], ['Clothes', 'expence'],  ['Fun', 'expence'], ['Other', 'expence']]
-
-
-def get_cats_from_db():
-  '''
-  Gets categories from db, returns them as array 
-  of objects of Category class
-  '''
-  categories = []
-  # todo: connect to db and get categories from there
-  for cat in cat_arr:
-    c_name = cat[0]
-    c_type = cat[1]
-    categories.append(Category(c_name, c_type))
-  return categories
-
+global new_rec_glob
+new_rec_glob = []
+new_rec_glob.append(classes.Record(0))
 
 def get_default_keyboard():
-  '''
-  Returns default keyboard for /add_record func
-  '''
+  ''' Returns default keyboard for /add_record func  '''
   # get last record number
-  new_num = get_new_record_num()
-  prefix = 'c_tp' + '\'' + str(new_num) + '\''
+  new_num = db.get_new_rec_num(db_filename)
+  prefix = 'start' + '\'' + str(new_num) + '\''
   key = types.InlineKeyboardMarkup()
   key.add(types.InlineKeyboardButton(text="Income", callback_data=prefix + 'income'))
-  key.add(types.InlineKeyboardButton(text="Expence", callback_data=prefix + 'expence'))
+  key.add(types.InlineKeyboardButton(text="Expence", callback_data=prefix + 'expense'))
   return key
 
 
-def do_add_record(message):
-  '''
-  Adds record to db 
-  '''
+def finalise_new_record(message):
+  ''' Finalise new record after adding it to db '''
 
-  new_rec = Record(0)
+  print(new_rec_glob[0].id)
 
-  for record in rec_arr:
-    if record.seq_num == get_last_record_num():
-      new_rec = record
-      break
-
-  if new_rec.seq_num == 0:
+  if new_rec_glob[0].id == 0:
     line = 'Invalid record'
     bot.reply_to(message, line)
     return
@@ -126,53 +54,20 @@ def do_add_record(message):
   except Exception:
     line = 'ERROR: Amount is not a number:\n' + amount
     bot.reply_to(message, line)
-    del rec_arr[-1]
     return
 
-  if int(amount) != amount:
-    line = 'Amount is not a number:\n' + amount
-    print(line)
-    bot.reply_to(message, line)
-    return
-
-  comment = text.split(' ')[1:]  
+  comment = text.split(' ')[1:]
   comment = ' '.join(comment)
 
-  new_rec.set_user_id(user_id)
-  new_rec.set_amount(amount)
-  new_rec.set_comment(comment)
-  print('Record added:)
-  print(new_rec.__dict__)
-  line = 'Record added:\n'
-  line += str(new_rec.__dict__)
+  new_rec_glob[0].set_date_ts(round(time.time(), 0))
+  new_rec_glob[0].set_user_id(user_id)
+  new_rec_glob[0].set_amount(amount)
+  new_rec_glob[0].set_comment(comment)
+  line = db.add_rec(db_filename, new_rec_glob[0])
+  if not line:
+    line = 'Record added'
+
   bot.send_message(message.from_user.id, line)
-
-
-def get_category_obj_by_name(name):
-  '''
-  Get category object by category name
-  '''
-  cats = get_cats_from_db()
-  for cat in cats:
-    if cat.name == name:
-      return cat
-
-
-def get_last_record_num():
-  '''
-  Returns curr last record num from db
-  '''
-  num = len(rec_arr) - 1
-  return int(num)
-
-
-def get_new_record_num():
-  '''
-  Returns new record num from db
-  '''
-  num = len(rec_arr)
-  return int(num)
-
 
 @bot.message_handler(content_types=['text'])
 def start(message):
@@ -183,13 +78,13 @@ def start(message):
   #   return
   print('GOT MSG: ' + message.text)
   if message.text == '/help':
-    bot.send_message(message.from_user.id, help_msg)
-  
+    bot.send_message(message.from_user.id, funcs.get_help_msg())
+
   if message.text == '/add_record':
     # show keyboard to choose income\expense
     key = types.InlineKeyboardMarkup()
     key = get_default_keyboard()
-    
+
     bot.send_message(message.from_user.id, 'Choose type of record', reply_markup=key)
 
   if message.text == '/show_report':
@@ -200,7 +95,13 @@ def start(message):
 
   if message.text == '/show_all':
     bot.send_message(message.from_user.id, 'Sending all records, one by one')
-    for record in rec_arr:
+    for record in db.get_recs_user(db_filename, message.from_user.id):
+      print(record)
+      if record == True:
+        continue
+      if record == False:
+        bot.send_message(message.from_user.id, 'You don\'t have records in db')
+        return
       bot.send_message(message.from_user.id, str(record.__dict__))
 
 
@@ -221,64 +122,52 @@ def callback_inline(call):
   data_body_str = ' '.join(data_body)
 
   # part for /add_record START
-  if data_marker == 'to_start':
+  if data_marker == 'back_to_start':
     line = 'Choose type of record'
     key = get_default_keyboard()
     bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=line, reply_markup=key)
 
-  if data_marker == 'c_tp':
+  if data_marker == 'start':
     line = 'Choose category'
     print('Category type:', record_num, data_body_str)
-    categories = get_cats_from_db()
+    categories = db.get_cats_arr(db_filename)
 
     for category in categories:
       if data_body_str == category.type:
         btn_data = ''
-        btn_data = 'cat\'' + record_num + '\'' + category.name
+        if data_body_str == 'income':
+          btn_prefix = 'cat_i'
+        if data_body_str == 'expense':
+          btn_prefix = 'cat_e'
+        btn_data = btn_prefix + '\'' + record_num + '\'' + category.name
         key.add(types.InlineKeyboardButton(text=category.name, callback_data=btn_data))
 
-    key.add(types.InlineKeyboardButton(text='Back to start', callback_data='to_start'))
+    key.add(types.InlineKeyboardButton(text='Back to start', callback_data='back_to_start'))
     bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=line, reply_markup=key)
 
-  if data_marker == 'cat':
+  if data_marker == 'cat_i' or data_marker == 'cat_e':
     print('Category: ', record_num, data_body_str)
     line = 'Input record info: amount of money you spent (nesessary, no spaces), short comment(optional). Example:\n' \
            '`1234 bananas\n`' \
            'Means \'I just spent (or earned) 1234 of some currency on bananas\''
-    new_record = Record(record_num)
+    new_rec_glob[0] = classes.Record(record_num)
 
-    new_cat = get_category_obj_by_name(data_body_str)
-    new_record.set_cat(new_cat)
+    if data_marker == 'cat_i':
+      new_cat_type = 'income'
+    if data_marker == 'cat_e':
+      new_cat_type = 'expense'
+    new_cat = classes.Category(new_cat_type, data_body_str)
+    new_rec_glob[0].set_cat(new_cat)
 
-    rec_arr.append(new_record)
     bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=line, parse_mode='Markdown')
 
-    bot.register_next_step_handler(message, do_add_record)
+    bot.register_next_step_handler(message, finalise_new_record)
   # part for /add_record END
 
 
 if __name__ == '__main__':
 
-  cats = get_cats_from_db()
-
-  rec1 = Record(0)
-  rec1.set_cat(cats[0])
-  rec1.set_amount('100')
-  rec1.set_comment('test record 1')
-
-  rec2 = Record(1)
-  rec2.set_cat(cats[5])
-  rec2.set_amount('450')
-  rec2.set_comment('test record 2')
-
-  global rec_arr
-  rec_arr = []
-  rec_arr.append(rec1)
-  rec_arr.append(rec2)
-
-#   for record in rec_arr:
-#     if record.seq_num == 1:
-# #      record.set_amount(200)
-#       print(record.__dict__)
+  db_started = db.start(db_filename)
+  print('Start db:', db_started)
 
   bot.infinity_polling()
