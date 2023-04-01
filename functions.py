@@ -13,18 +13,6 @@ There are commands below:
 def get_help_msg():
   return help_msg
 
-def get_default_keyboard():
-  '''
-  Returns default keyboard for /add_record func
-  '''
-  # get last record number
-  new_num = db.get_new_record_num()
-  prefix = 'start' + '\'' + str(new_num) + '\''
-  key = types.InlineKeyboardMarkup()
-  key.add(types.InlineKeyboardButton(text="Income", callback_data=prefix + 'income'))
-  key.add(types.InlineKeyboardButton(text="Expence", callback_data=prefix + 'expense'))
-  return key
-
 def get_cat_obj_by_name(name):
   '''
   Get category object by category name
