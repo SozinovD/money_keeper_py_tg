@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os
-import sys
 import time
 
 import telebot
@@ -32,9 +31,8 @@ def get_default_keyboard():
   key.add(types.InlineKeyboardButton(text="Expence", callback_data=prefix + 'expense'))
   return key
 
-
 def finalise_new_record(message):
-  ''' Finalise new record after adding it to db '''
+  ''' Finalise new record after before it to db '''
 
   print(new_rec_glob[0].id)
 
@@ -87,7 +85,7 @@ def start(message):
 
     bot.send_message(message.from_user.id, 'Choose type of record', reply_markup=key)
 
-  if message.text == '/show_report':
+  if message.text == '/generate_report':
     key = types.InlineKeyboardMarkup()
     key = get_default_keyboard()
     bot.send_message(message.from_user.id, 'Choose how report should look\n(wait for v2, redirecting to /add_record func)', reply_markup=key)
@@ -147,9 +145,9 @@ def callback_inline(call):
 
   if data_marker == 'cat_i' or data_marker == 'cat_e':
     print('Category: ', record_num, data_body_str)
-    line = 'Input record info: amount of money you spent (nesessary, no spaces), short comment(optional). Example:\n' \
-           '`1234 bananas\n`' \
-           'Means \'I just spent (or earned) 1234 of some currency on bananas\''
+    line = 'Input record info, example:\n' \
+           '`1234 really great bananas!\n`' \
+           'Means \'I just spent (or earned) 1234 of some currency on bananas that i really love\''
     new_rec_glob[0] = classes.Record(record_num)
 
     if data_marker == 'cat_i':
