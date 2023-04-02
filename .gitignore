@@ -4,3 +4,4 @@ config.py
 tips.txt
 *.db
 nohup.out
+*.sh
