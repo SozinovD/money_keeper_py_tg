@@ -79,20 +79,24 @@ def start(message):
     # bot.register_next_step_handler(message, do_show_report)
 
   if message.text == '/show_all':
-    bot.send_message(message.from_user.id, 'Sending all your records')
-    for record in db.get_recs_user(db_filename, message.from_user.id):
+    records = db.get_recs_by_filter(db_filename, message.from_user.id)
+    if len(records) < 1:
+      bot.send_message(message.from_user.id, 'You do not have records')
+    else:
+      bot.send_message(message.from_user.id, 'Sending all your records')
+    for record in records:
       print(record)
-      if record == True:
-        continue
-      if record == False:
-        bot.send_message(message.from_user.id, 'You don\'t have records in db')
-        return
       bot.send_message(message.from_user.id, str(record.__dict__))
 
   if message.text == '/show_last_3':
-    bot.send_message(message.from_user.id, 'Sending your 3 last records')
-    for rec in db.get_last_n_recs(db_filename, message.from_user.id, 3):
-      bot.send_message(message.from_user.id, str(rec.__dict__))
+    records = db.get_last_n_recs(db_filename, message.from_user.id, 3)
+    if len(records) < 1:
+      bot.send_message(message.from_user.id, 'You do not have records')
+    else:
+      bot.send_message(message.from_user.id, 'Sending your 3 last records')
+    for record in records:
+      print(record)
+      bot.send_message(message.from_user.id, str(record.__dict__))
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
