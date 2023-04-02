@@ -6,7 +6,7 @@ import telebot
 from telebot import types
 
 from config import api_key
-from config import admin_id
+from config import owner_id
 from config import db_filename
 
 import functions as funcs
@@ -68,11 +68,11 @@ def finalise_new_record(message):
 
 @bot.message_handler(content_types=['text'])
 def start(message):
-  # if str(message.from_user.id) != str(admin_id):
-  #   print('Non-admin access attempt, user_id: ' + str(message.from_user.id))
-  #   line = 'You are not allowed to use this bot. Your user_id below\n' + str(message.from_user.id)
-  #   bot.send_message(message.from_user.id, line)
-  #   return
+  if str(message.from_user.id) != str(owner_id):
+    print('Non-admin access attempt, user_id: ' + str(message.from_user.id))
+    line = 'You are not allowed to use this bot. Your user_id below\n' + str(message.from_user.id)
+    bot.send_message(message.from_user.id, line)
+    return
   print('GOT MSG: ' + message.text)
   if message.text == '/help':
     bot.send_message(message.from_user.id, funcs.get_help_msg())
