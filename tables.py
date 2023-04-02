@@ -16,7 +16,8 @@ table_rec = '''CREATE TABLE records
               date_ts INTEGER NOT NULL,
               comment varchar(100),
               currency varchar(3) NOT NULL,
-              amount INTEGER NOT NULL)'''
+              amount REAL NOT NULL
+              amount_usd REAL)'''
 
 tables_arr = [ table_cat, table_curr, table_rec ]
 
