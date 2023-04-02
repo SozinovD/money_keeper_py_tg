@@ -30,7 +30,7 @@ class Record:
     self.category = ''
     self.date_ts = ''
     self.comment = ''
-    self.currency = 'RUR'
+    self.currency = 'KZT'
     self.amount = 0
 
   def set_user_id(self, user_id: int):
