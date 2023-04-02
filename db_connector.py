@@ -5,7 +5,7 @@ import classes
 
 import os
 
-from config import db_filename
+from config import db_filename as db_file_name      # for tests
 from tables import tables_arr, default_cats_arr, default_currs_arr
 
 def start(db_filename):
@@ -24,12 +24,12 @@ def start(db_filename):
 
   return True
 
-def init_db(db_file_name):
+def init_db(db_filename):
   ''' Init db, create tables, input default values '''
-  print('Init db, filename:\'' + db_file_name + '\'')
+  print('Init db, filename:\'' + db_filename + '\'')
 
   try:
-    conn = sqlite3.connect(db_file_name)
+    conn = sqlite3.connect(db_filename)
     c = conn.cursor()
     # create tables
     for table in tables_arr:
@@ -53,10 +53,10 @@ def add_rec(db_filename, new_rec):
   try:
     conn = sqlite3.connect(db_filename)
     c = conn.cursor()
-
     rec_data_arr = new_rec.get_arr()
 
-    c.executemany('INSERT INTO records(user_id, type, category, date_ts, comment, currency, amount)  \
+    # add record
+    c.executemany('INSERT INTO records(user_id, type, category, date_ts, comment, currency, amount) \
                    VALUES (?,?,?,?,?,?,?)', (rec_data_arr,))
 
     result = c.fetchall()
@@ -71,10 +71,10 @@ def add_rec(db_filename, new_rec):
       conn.close()
   return result
 
-def select(db_file_name, table, fields='*', filters=None):
+def select(db_filename, table, fields='*', filters=None):
   ''' Make SELECT request to db '''
   try:
-    conn = sqlite3.connect(db_file_name)
+    conn = sqlite3.connect(db_filename)
     c = conn.cursor()
     request = 'SELECT ' + fields + ' FROM ' + table
     if not filters == None:
@@ -101,9 +101,9 @@ def get_cats_arr(db_filename):
 def get_new_rec_num(db_filename):
   ''' Get last record num, return +1 '''
   try:
-    last_rec_num = print(select(db_filename, 'records')[-1][0])
-    new_rec_num = last_rec_num + 1
-  except Exception:
+    last_rec_num = select(db_filename, 'records')[-1][0]
+    new_rec_num = int(last_rec_num) + 1
+  except Exception as e:
     new_rec_num = 1
   return new_rec_num
 
@@ -111,7 +111,6 @@ def rec_to_obj(rec):
   ''' Get record from db, return Record object '''
   rec_obj = classes.Record(rec[0])
   rec_cat = classes.Category(rec[2], rec[3])
-
   rec_obj.set_user_id(rec[1])
   rec_obj.set_cat(rec_cat)
   rec_obj.set_date_ts(rec[4])
@@ -143,6 +142,36 @@ def get_recs_user(db_filename, user_id):
       rec_user_arr.append(rec)
   return rec_user_arr
 
+def get_last_rec_currency(db_filename, user_id):
+  ''' Return currency of last record '''
+  filt = 'user_id="' + str(user_id) + '"'
+  try:
+    result = select(db_filename, 'records', 'currency', filt)[-1][0]
+    return result
+  except Exception:
+    return 'USD'
+
+def get_currs_arr(db_filename):
+  currs_arr = []
+  result = select(db_filename, 'currencies', 'name')
+  for curr in result:
+    currs_arr.append(curr[0])
+  return currs_arr
+
+def get_last_n_recs(db_filename, user_id, rec_num):
+  recs_arr = []
+  min_num = get_new_rec_num(db_filename) - rec_num
+  for rec in get_recs_user(db_filename, user_id):
+    if rec.id < min_num:
+      continue
+    recs_arr.append(rec)
+  return recs_arr
+
 # if __name__ == '__main__':
-  # print(select(db_filename, 'records', '*', 'user_id="123456"'))
-  # print(get_recs_user(db_filename, '123456'))
+  
+#   print(get_last_n_recs(db_file_name, 317600836, 3))
+#   print(get_currs(db_file_name))
+#   print(get_last_rec_currency(db_file_name, 317600836))
+#   print(select(db_file_name, 'records')[-1][0])
+#   print(select(db_file_name, 'records', '*', 'user_id="123456"'))
+#   print(get_recs_user(db_file_name, '123456'))
