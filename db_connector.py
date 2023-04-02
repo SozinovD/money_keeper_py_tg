@@ -117,30 +117,26 @@ def rec_to_obj(rec):
   rec_obj.set_comment(rec[5])
   rec_obj.set_currency(rec[6])
   rec_obj.set_amount(rec[7])
-
   return rec_obj
 
 def get_recs_all(db_filename):
-  ''' Return all records from db for one user_id in array
-      arr[0] will be result (True/False, False if records were not found) '''
-  rec_all_arr = [ False ]
-  for rec in select(db_filename, 'records'):
-    if rec_all_arr[0] == False:
-      rec_all_arr[0] = True
-    new_rec = rec_to_obj(rec)
-    rec_all_arr.append(new_rec)
+  ''' Return all records from db for one user_id in array '''
+  rec_all_arr = []
+  recs = select(db_filename, 'records')
+  for rec in recs:
+    rec_all_arr.append(rec_to_obj(rec))
   return rec_all_arr
 
-def get_recs_user(db_filename, user_id):
-  ''' Return record selected by 'field':'value' for one user_id in array
-      arr[0] will be result (True/False, False if records were not found) '''
-  rec_user_arr = []
-  for rec in get_recs_all(db_filename):
-    if type(rec) == bool:
-      continue
-    if rec.user_id == user_id:
-      rec_user_arr.append(rec)
-  return rec_user_arr
+def get_recs_by_filter(db_filename, user_id, filters=None):
+  ''' Return record selected by 'field':'value' for one user_id in array '''
+  recs_arr = []
+  filt = 'user_id="' + str(user_id) + '"'
+  if filters != None:
+    filt += filters
+  recs = select(db_filename, 'records', '*', filt)
+  for rec in recs:
+    recs_arr.append(rec_to_obj(rec))
+  return recs_arr
 
 def get_last_rec_currency(db_filename, user_id):
   ''' Return currency of last record '''
@@ -161,10 +157,7 @@ def get_currs_arr(db_filename):
 def get_last_n_recs(db_filename, user_id, rec_num):
   recs_arr = []
   min_num = get_new_rec_num(db_filename) - rec_num
-  for rec in get_recs_user(db_filename, user_id):
-    if rec.id < min_num:
-      continue
-    recs_arr.append(rec)
+  recs_arr = get_recs_by_filter(db_filename, user_id, 'AND id >= ' + str(min_num))
   return recs_arr
 
 # if __name__ == '__main__':
