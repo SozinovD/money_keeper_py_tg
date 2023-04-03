@@ -144,7 +144,8 @@ def get_last_rec_currency(db_filename, user_id):
   try:
     result = select(db_filename, 'records', 'currency', filt)[-1][0]
     return result
-  except Exception:
+  except Exception as e:
+    print(e)
     return 'USD'
 
 def get_currs_arr(db_filename):
@@ -164,7 +165,7 @@ def get_last_n_recs(db_filename, user_id, rec_num):
   
 #   print(get_last_n_recs(db_file_name, 317600836, 3))
 #   print(get_currs(db_file_name))
-#   print(get_last_rec_currency(db_file_name, 317600836))
+  # print(get_last_rec_currency(db_file_name, '317600836'))
 #   print(select(db_file_name, 'records')[-1][0])
 #   print(select(db_file_name, 'records', '*', 'user_id="123456"'))
 #   print(get_recs_user(db_file_name, '123456'))
