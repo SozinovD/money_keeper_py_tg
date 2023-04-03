@@ -36,7 +36,7 @@ def finalise_new_record(message):
   amount = ''.join(amount)
 
   try:
-    amount = int(amount)
+    amount = float(amount)
   except Exception:
     line = 'ERROR: Amount is not a number:\n' + amount
     bot.reply_to(message, line)
@@ -47,7 +47,8 @@ def finalise_new_record(message):
 
   new_rec_glob[0].set_date_ts(round(time.time(), 0))
   new_rec_glob[0].set_user_id(user_id)
-  new_rec_glob[0].set_amount(amount)
+  new_rec_glob[0].set_amount(round(amount, 2))
+  # new_rec_glob[0].set_amount_usd(round(amount, 2)) # todo: curr convertions
   new_rec_glob[0].set_comment(comment)
   line = db.add_rec(db_filename, new_rec_glob[0])
   if not line:
