@@ -24,11 +24,6 @@ new_rec_glob.insert(0, classes.Record(0))
 def finalise_new_record(message):
   ''' Finalise new record after before it to db '''
 
-  if new_rec_glob[0].id == 0:
-    line = 'Invalid record'
-    bot.reply_to(message, line)
-    return
-
   text = message.text
   user_id = message.from_user.id
 
@@ -69,15 +64,12 @@ def start(message):
   if message.text == '/add_record':
     # show keyboard to choose income\expense
     key = types.InlineKeyboardMarkup()
-    key = funcs.get_default_keyboard(data_divider_in_callback)
-
+    key = funcs.get_start_rec_add_kbrd(data_divider_in_callback, message.from_user.id)
     bot.send_message(message.from_user.id, 'Choose type of record', reply_markup=key)
 
   if message.text == '/generate_report':
-    key = types.InlineKeyboardMarkup()
-    key = funcs.get_default_keyboard(data_divider_in_callback)
-    bot.send_message(message.from_user.id, 'Choose how report should look\n(wait for v2, redirecting to /add_record func)', reply_markup=key)
-    # bot.register_next_step_handler(message, do_show_report)
+    bot.send_message(message.from_user.id, 'Not ready yet')
+    # bot.register_next_step_handler(message, do_show_report)  # todo: generate report
 
   if message.text == '/show_all':
     records = db.get_recs_by_filter(db_filename, message.from_user.id)
@@ -109,29 +101,31 @@ def callback_inline(call):
 
   data_arr = funcs.dec_callback_data(data_divider_in_callback, call.data)
   data_marker = data_arr[0]
-  data_body = data_arr[1]
+  data_body_arr = []
+  for data in data_arr[1:]:
+    data_body_arr.append(data)
+
+  # print(data_body_arr)
 
   # part for /add_record START
   if data_marker == 'back_to_start':
     line = 'Choose type of record'
-    key = funcs.get_default_keyboard(data_divider_in_callback)
+    key = funcs.get_start_rec_add_kbrd(data_divider_in_callback)
     bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line, reply_markup=key)
 
   if data_marker == 'start':
     line = 'Choose category'
-
-    key = funcs.get_cat_btns_by_type(db_filename, data_body, data_divider_in_callback)
-    new_rec_glob[0].set_currency(db.get_last_rec_currency(db_filename, message.from_user.id))
-
+    key = funcs.get_cat_btns_by_type(db_filename, data_body_arr[0], data_divider_in_callback)
+    new_rec_glob[0].set_currency(db.get_last_rec_currency(db_filename, data_body_arr[1]))
     bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line, reply_markup=key)
 
   if data_marker == 'income' or data_marker == 'expense' or data_marker == 'curr':
     key = funcs.get_currency_btns(db_filename, data_divider_in_callback, data_marker)
+    
     if data_marker == 'curr':
-      new_rec_glob[0].set_currency(data_body)
+      new_rec_glob[0].set_currency(data_body_arr[0])
     else:
-      new_rec_glob[0] = classes.Record(1)
-      new_rec_glob[0].set_cat(classes.Category(data_marker, data_body))
+      new_rec_glob[0].set_cat(classes.Category(data_marker, data_body_arr[0]))
 
     line = 'Input record info, example:\n' \
            '`1234 really great bananas!\n`' \
