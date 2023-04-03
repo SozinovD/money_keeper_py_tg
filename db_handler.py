@@ -48,6 +48,35 @@ def init_db(db_filename):
     if conn:
       conn.close()
 
+def select(db_filename, table, fields='*', filters=None):
+  ''' Make SELECT request to db '''
+  try:
+    conn = sqlite3.connect(db_filename)
+    c = conn.cursor()
+    request = 'SELECT ' + fields + ' FROM ' + table
+    if not filters == None:
+      request += ' WHERE ' + filters
+    c.execute(request)
+
+    result = c.fetchall()
+  except sqlite3.Error as e:
+    # print(e)
+    return e
+  finally:
+    if conn:
+      conn.close()
+  return result
+
+
+def get_cats_arr(db_filename):
+  ''' Get categories from db, return them in array '''
+  cats_arr = []
+  for cat in select(db_filename, 'categories'):
+    new_cat = classes.Category(cat[1], cat[2])
+    cats_arr.append(new_cat)
+  return cats_arr
+
+
 def add_rec(db_filename, new_rec):
   ''' Add new record to db,  return result '''
   try:
@@ -70,33 +99,6 @@ def add_rec(db_filename, new_rec):
     if conn:
       conn.close()
   return result
-
-def select(db_filename, table, fields='*', filters=None):
-  ''' Make SELECT request to db '''
-  try:
-    conn = sqlite3.connect(db_filename)
-    c = conn.cursor()
-    request = 'SELECT ' + fields + ' FROM ' + table
-    if not filters == None:
-      request += ' WHERE ' + filters
-    c.execute(request)
-
-    result = c.fetchall()
-  except sqlite3.Error as e:
-    # print(e)
-    return e
-  finally:
-    if conn:
-      conn.close()
-  return result
-
-def get_cats_arr(db_filename):
-  ''' Get categories from db, return them in array '''
-  cats_arr = []
-  for cat in select(db_filename, 'categories'):
-    new_cat = classes.Category(cat[1], cat[2])
-    cats_arr.append(new_cat)
-  return cats_arr
 
 def get_new_rec_num(db_filename):
   ''' Get last record num, return +1 '''
@@ -138,6 +140,13 @@ def get_recs_by_filter(db_filename, user_id, filters=None):
     recs_arr.append(rec_to_obj(rec))
   return recs_arr
 
+def get_last_n_recs(db_filename, user_id, rec_num):
+  recs_arr = []
+  min_num = get_new_rec_num(db_filename) - rec_num
+  recs_arr = get_recs_by_filter(db_filename, user_id, 'AND id >= ' + str(min_num))
+  return recs_arr
+
+
 def get_last_rec_currency(db_filename, user_id):
   ''' Return currency of last record '''
   filt = 'user_id="' + str(user_id) + '"'
@@ -155,14 +164,60 @@ def get_currs_arr(db_filename):
     currs_arr.append(curr[0])
   return currs_arr
 
-def get_last_n_recs(db_filename, user_id, rec_num):
-  recs_arr = []
-  min_num = get_new_rec_num(db_filename) - rec_num
-  recs_arr = get_recs_by_filter(db_filename, user_id, 'AND id >= ' + str(min_num))
-  return recs_arr
+def add_curr(db_filename, new_curr):
+  if len(new_curr) != 3:
+    return 'Curr must be 3 letters exactly'
+  try:
+    new_curr = new_curr.upper()
+    conn = sqlite3.connect(db_filename)
+    c = conn.cursor()
+    currs_arr = get_currs_arr(db_filename)
+    if new_curr in currs_arr:
+      return 'Curr already exists in db'
+    print('Adding curr:', new_curr)
+    c.execute('INSERT INTO currencies(name) VALUES (?)', (new_curr,))
+    result = conn.commit()
+    if result == None:
+      result = 'Currency added: ' + new_curr
+  except sqlite3.Error as e:
+    # print(e)
+    return e
+  finally:
+    if conn:
+      conn.close()
+  return result
+
+def del_curr(db_filename, del_curr):
+  ''' Delete curr from bd. Don't touch default or if there are records containing it '''
+  del_curr = del_curr.upper()
+  if not del_curr in get_currs_arr(db_filename):
+    return 'Currency not found in db: ' + del_curr
+  if del_curr in default_currs_arr:
+    return 'Can\'t delete default currency'
+  used_currs_arr = []
+  for rec in get_recs_all(db_filename):
+    if not rec.currency in used_currs_arr:
+      used_currs_arr.append(rec.currency)
+  if del_curr in used_currs_arr:
+    return 'Can\'t delete currency that is being used in records'
+
+  try:
+    conn = sqlite3.connect(db_filename)
+    c = conn.cursor()
+    c.execute("DELETE FROM currencies WHERE name=?", (del_curr,))
+    result = conn.commit()
+    if result == None:
+      result = 'Currency deleted: ' + del_curr
+  except sqlite3.Error as e:
+    # print(e)
+    return e
+  finally:
+    if conn:
+      conn.close()
+  return result
 
 # if __name__ == '__main__':
-  
+#   print(add_curr(db_file_name, 'KZK'))
 #   print(get_last_n_recs(db_file_name, 317600836, 3))
 #   print(get_currs(db_file_name))
   # print(get_last_rec_currency(db_file_name, '317600836'))
