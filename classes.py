@@ -14,14 +14,15 @@ class Category():
 @dataclass
 class Record:
   ''' Class for db records '''
-  id: int         # sequential number
-  user_id: int    # user that sent this record
-  type: str       # type of record. Usually income or expense
-  category: str   # a category name
-  date_ts: int    # when record was done
-  comment: str    # a comment for record
-  currency: str   # tree-letters currency code
-  amount: int     # amount for this record
+  id: int           # sequential number
+  user_id: int      # user that sent this record
+  type: str         # type of record. Usually income or expense
+  category: str     # a category name
+  date_ts: int      # when record was done
+  comment: str      # a comment for record
+  currency: str     # tree-letters currency code
+  amount: float     # amount for this record
+  amount_usd: float # amount for this record
 
   def __init__(self, id: int):
     self.id = int(id)
@@ -32,6 +33,7 @@ class Record:
     self.comment = ''
     self.currency = 'KZT'
     self.amount = 0
+    self.amount_usd = 0
 
   def set_user_id(self, user_id: int):
     self.user_id = int(user_id)
