@@ -68,7 +68,7 @@ def start(message):
     bot.send_message(message.from_user.id, 'Choose type of record', reply_markup=key)
 
   if message.text == '/generate_report':
-    bot.send_message(message.from_user.id, 'Not ready yet')
+    bot.send_message(message.from_user.id, 'Feature is not ready yet')
     # bot.register_next_step_handler(message, do_show_report)  # todo: generate report
 
   if message.text == '/show_all':
