@@ -57,7 +57,7 @@ def get_default_keyboard(divider):
   return get_keys_in_rows(2, btns_arr)
 
 def get_keys_in_rows(columns_num, btn_data_arr):
-  ''' Return keyboard that is sorted in rows '''
+  ''' Return keyboard that is sorted in rows and columns '''
   num = 0
   btn_arr = []
   key = types.InlineKeyboardMarkup()
