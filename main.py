@@ -55,6 +55,12 @@ def finalise_new_record(message):
     line = 'Record added'
   bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line)
 
+def add_curr_handler(message):
+  curr_name = message.text
+  bot.send_message(message.from_user.id, db.add_curr(db_filename, curr_name))
+
+# def del_curr
+
 @bot.message_handler(content_types=['text'])
 def start(message):
   if str(message.from_user.id) != str(owner_id):
@@ -68,9 +74,12 @@ def start(message):
 
   if message.text == '/add_record':
     # show keyboard to choose income\expense
-    key = types.InlineKeyboardMarkup()
     key = funcs.get_start_rec_add_kbrd(data_divider_in_callback, message.from_user.id)
     bot.send_message(message.from_user.id, 'Choose type of record', reply_markup=key)
+
+  if message.text == '/curr_setup':
+    key = funcs.get_curr_setup_kbrd(data_divider_in_callback)
+    bot.send_message(message.from_user.id, 'Choose action with currencies', reply_markup=key)
 
   if message.text == '/generate_report':
     bot.send_message(message.from_user.id, 'Feature is not ready yet')
@@ -110,6 +119,8 @@ def callback_inline(call):
   for data in data_arr[1:]:
     data_body_arr.append(data)
 
+  print('data_marker', data_marker)
+  print('data_body_arr', data_body_arr)
   # print(data_body_arr)
 
   # part for /add_record START
@@ -124,10 +135,12 @@ def callback_inline(call):
     new_rec_glob[0].set_currency(db.get_last_rec_currency(db_filename, data_body_arr[1]))
     bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line, reply_markup=key)
 
-  if data_marker == 'income' or data_marker == 'expense' or data_marker == 'curr':
-    key = funcs.get_currency_btns(db_filename, data_divider_in_callback, data_marker)
+  if data_marker == 'income' or data_marker == 'expense' or data_marker == 'a_r_curr':
+    key = funcs.get_currency_btns(db_filename, data_divider_in_callback, 'a_r_')
+    back_btn_callback_data = funcs.enc_callback_data(data_divider_in_callback, 'back_to_start\'')
+    key.add(types.InlineKeyboardButton(text='Back to start', callback_data=back_btn_callback_data))
     
-    if data_marker == 'curr':
+    if data_marker == 'a_r_curr':
       new_rec_glob[0].set_currency(data_body_arr[0])
     else:
       new_rec_glob[0].set_cat(classes.Category(data_marker, data_body_arr[0]))
@@ -140,10 +153,25 @@ def callback_inline(call):
     except Exception as e:
       print(e)
 
-    if data_marker != 'curr':
+    if data_marker != 'a_r_curr':
       bot.register_next_step_handler(message, finalise_new_record)
-
   # part for /add_record END
+
+  if data_marker == 'setup_curr':
+    if data_body_arr[0] == 'add':
+      line = 'Input 3-letter currency identificator, for example\nUSD'
+      bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line)
+      bot.register_next_step_handler(message, add_curr_handler)
+    else:
+      key = funcs.get_currency_btns(db_filename, data_divider_in_callback, 's_c_')
+      line = 'Choose currency to delete'
+      bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line, reply_markup=key)
+
+  if data_marker == 's_c_curr':
+    print('del curr', data_body_arr[0])
+    line = db.del_curr(db_filename, data_body_arr[0])
+    bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line)
+
 
 if __name__ == '__main__':
 
