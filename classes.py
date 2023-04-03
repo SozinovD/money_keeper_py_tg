@@ -49,19 +49,22 @@ class Record:
     self.currency = str(currency)
 
   def set_amount(self, amount: int):
-    self.amount = int(amount)
+    self.amount = float(amount)
+
+  def set_amount_usd(self, amount_usd: int):
+    self.amount_usd = float(amount_usd)
 
   def set_comment(self, comment: str):
     self.comment = str(comment)
 
   def get_arr(self):
     arr = []
-    # arr.append(int(self.id))
     arr.append(int(self.user_id))
     arr.append(self.type)
     arr.append(self.category)
     arr.append(int(self.date_ts))
     arr.append(self.comment)
     arr.append(self.currency)
-    arr.append(int(self.amount))
+    arr.append(float(self.amount))
+    arr.append(float(self.amount_usd))
     return arr
