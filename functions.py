@@ -19,8 +19,7 @@ def enc_callback_data(divider, *words):
   ''' Encode data into one line for callback using a divider, return line '''
   call_data = ''
   for word in words:
-    call_data += word + divider
-  print('Encoded:', call_data)
+    call_data += str(word) + str(divider)
   return call_data
 
 def dec_callback_data(divider, call_data):
@@ -48,12 +47,12 @@ def get_currency_btns(db_filename, divider, rec_type):
     btns_arr.append([curr, btn_data])
   return get_keys_in_rows(4, btns_arr)
 
-def get_default_keyboard(divider):
+def get_start_rec_add_kbrd(divider, user_id=None):
   ''' Returns default keyboard for /add_record func  '''
   prefix = enc_callback_data(divider, 'start')
   btns_arr = []
-  btns_arr.append(['Income', prefix + 'income'])
-  btns_arr.append(['Expence', prefix + 'expense'])
+  btns_arr.append(['Income', enc_callback_data(divider, 'start', 'income', user_id)])
+  btns_arr.append(['Expence', enc_callback_data(divider, 'start', 'expense', user_id)])
   return get_keys_in_rows(2, btns_arr)
 
 def get_keys_in_rows(columns_num, btn_data_arr):
