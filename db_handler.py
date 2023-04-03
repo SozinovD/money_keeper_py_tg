@@ -13,7 +13,7 @@ def start(db_filename):
   try:
     conn = sqlite3.connect(db_filename)
   except Exception as e:
-    return e
+    return 'Error: ' + str(e) 
   finally:
     if conn:
       conn.close()
@@ -43,7 +43,7 @@ def init_db(db_filename):
     conn.commit()
     return True
   except sqlite3.Error as e:
-    return e
+    return 'Error: ' + str(e) 
   finally:
     if conn:
       conn.close()
@@ -60,8 +60,7 @@ def select(db_filename, table, fields='*', filters=None):
 
     result = c.fetchall()
   except sqlite3.Error as e:
-    # print(e)
-    return e
+    return 'Error: ' + str(e) 
   finally:
     if conn:
       conn.close()
@@ -83,18 +82,13 @@ def add_rec(db_filename, new_rec):
     conn = sqlite3.connect(db_filename)
     c = conn.cursor()
     rec_data_arr = new_rec.get_arr()
-
     # add record
-    c.executemany('INSERT INTO records(user_id, type, category, date_ts, comment, currency, amount) \
-                   VALUES (?,?,?,?,?,?,?)', (rec_data_arr,))
-
-    result = c.fetchall()
-    # make sure changes are permanent
-    conn.commit()
+    c.executemany('INSERT INTO records(user_id, type, category, date_ts, comment, currency, amount, amount_usd) \
+                   VALUES (?,?,?,?,?,?,?,?)', (rec_data_arr,))
+    result = conn.commit()
 
   except sqlite3.Error as e:
-    # print(e)
-    return e
+    return 'Error: ' + str(e)
   finally:
     if conn:
       conn.close()
@@ -119,6 +113,7 @@ def rec_to_obj(rec):
   rec_obj.set_comment(rec[5])
   rec_obj.set_currency(rec[6])
   rec_obj.set_amount(rec[7])
+  rec_obj.set_amount_usd(rec[8])
   return rec_obj
 
 def get_recs_all(db_filename):
@@ -174,14 +169,14 @@ def add_curr(db_filename, new_curr):
     currs_arr = get_currs_arr(db_filename)
     if new_curr in currs_arr:
       return 'Curr already exists in db'
-    print('Adding curr:', new_curr)
+    # print('Adding curr:', new_curr)
     c.execute('INSERT INTO currencies(name) VALUES (?)', (new_curr,))
     result = conn.commit()
     if result == None:
       result = 'Currency added: ' + new_curr
   except sqlite3.Error as e:
     # print(e)
-    return e
+    return 'Error: ' + str(e) 
   finally:
     if conn:
       conn.close()
@@ -209,8 +204,7 @@ def del_curr(db_filename, del_curr):
     if result == None:
       result = 'Currency deleted: ' + del_curr
   except sqlite3.Error as e:
-    # print(e)
-    return e
+    return 'Error: ' + str(e) 
   finally:
     if conn:
       conn.close()

@@ -11,6 +11,7 @@ from config import db_filename
 
 import functions as funcs
 import db_handler as db
+import currency_api_handler as currs_api
 
 import classes
 
@@ -48,7 +49,8 @@ def finalise_new_record(message):
   new_rec_glob[0].set_date_ts(round(time.time(), 0))
   new_rec_glob[0].set_user_id(user_id)
   new_rec_glob[0].set_amount(round(amount, 2))
-  # new_rec_glob[0].set_amount_usd(round(amount, 2)) # todo: curr convertions
+  amount_usd = currs_api.get_today_rate(new_rec_glob[0].currency, 'usd') * amount
+  new_rec_glob[0].set_amount_usd(round(amount_usd, 2))
   new_rec_glob[0].set_comment(comment)
   line = db.add_rec(db_filename, new_rec_glob[0])
   if not line:
@@ -58,8 +60,6 @@ def finalise_new_record(message):
 def add_curr_handler(message):
   curr_name = message.text
   bot.send_message(message.from_user.id, db.add_curr(db_filename, curr_name))
-
-# def del_curr
 
 @bot.message_handler(content_types=['text'])
 def start(message):
