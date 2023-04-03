@@ -10,13 +10,18 @@ from config import owner_id
 from config import db_filename
 
 import functions as funcs
-import db_connector as db
+import db_handler as db
 
 import classes
 
 bot = telebot.TeleBot(api_key)
 data_divider_in_callback = '\''
 
+# I tried to use global record, but it simply didn't work
+# new_rec_glob[0] is record obj
+# new_rec_glob[1] is chat_id
+# new_rec_glob[2] is message_id
+# new_rec_glob[1] and new_rec_glob[1] are needed to remember message to edit
 global new_rec_glob
 new_rec_glob = []
 new_rec_glob.insert(0, classes.Record(0))
