@@ -31,7 +31,7 @@ class Record:
     self.category = ''
     self.date_ts = ''
     self.comment = ''
-    self.currency = 'KZT'
+    self.currency = 'USD'
     self.amount = 0
     self.amount_usd = 0
 
