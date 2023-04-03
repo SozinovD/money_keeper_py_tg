@@ -3,10 +3,14 @@
 import sqlite3
 import classes
 
+import currency_api_handler as currs_api
+
 import os
 
 from config import db_filename as db_file_name      # for tests
 from tables import tables_arr, default_cats_arr, default_currs_arr
+
+from datetime import datetime
 
 def start(db_filename):
   ''' Connect to db, create if it doesn't exist, return conn obj '''
@@ -141,6 +145,28 @@ def get_last_n_recs(db_filename, user_id, rec_num):
   recs_arr = get_recs_by_filter(db_filename, user_id, 'AND id >= ' + str(min_num))
   return recs_arr
 
+def set_amount_usd_all_recs(db_filename):
+  try:
+    recs = get_recs_all(db_filename)
+    rec_data = []
+    conn = sqlite3.connect(db_filename)
+    c = conn.cursor()
+    for rec in recs:
+      date_of_rec = datetime.utcfromtimestamp(rec.date_ts).strftime('%Y-%m-%d')
+      rec_data = []
+      rec_data.append(round(currs_api.get_rate(rec.currency , 'usd', date_of_rec) * rec.amount, 2))
+      rec_data.append(rec.id)
+      print(rec_data)
+      c.execute('Update records set amount_usd = ? where id = ?', (rec_data))
+    conn.commit()
+
+  except sqlite3.Error as e:
+    return 'Error: ' + str(e)
+  finally:
+    if conn:
+      conn.close()
+  return 
+
 
 def get_last_rec_currency(db_filename, user_id):
   ''' Return currency of last record '''
@@ -211,7 +237,8 @@ def del_curr(db_filename, del_curr):
   return result
 
 # if __name__ == '__main__':
-#   print(add_curr(db_file_name, 'KZK'))
+#   print(set_amount_usd_all_recs(db_file_name))
+  # print(add_curr(db_file_name, 'KZK'))
 #   print(get_last_n_recs(db_file_name, 317600836, 3))
 #   print(get_currs(db_file_name))
   # print(get_last_rec_currency(db_file_name, '317600836'))
