@@ -77,7 +77,7 @@ def start(message):
     key = funcs.get_start_rec_add_kbrd(data_divider_in_callback, message.from_user.id)
     bot.send_message(message.from_user.id, 'Choose type of record', reply_markup=key)
 
-  if message.text == '/curr_setup':
+  if message.text == '/currs_setup':
     key = funcs.get_curr_setup_kbrd(data_divider_in_callback)
     bot.send_message(message.from_user.id, 'Choose action with currencies', reply_markup=key)
 
@@ -157,7 +157,7 @@ def callback_inline(call):
       bot.register_next_step_handler(message, finalise_new_record)
   # part for /add_record END
 
-  if data_marker == 'setup_curr':
+  if data_marker == 'curr_setup':
     if data_body_arr[0] == 'add':
       line = 'Input 3-letter currency identificator, for example\nUSD'
       bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line)

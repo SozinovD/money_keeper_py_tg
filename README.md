@@ -7,6 +7,7 @@
 
 * /help - show help page
 * /add_record - add new income or expense record
+* /currs_setup - setup currencies
 * /generate_report - generate report (will be avalible in v2 and above)
 
 ## Разбивка фич по версиям

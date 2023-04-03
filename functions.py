@@ -75,6 +75,6 @@ def get_btns_in_rows(columns_num, btn_data_arr):
 def get_curr_setup_kbrd(divider):
   ''' Returns keyboard for currencies setup '''
   btns_arr = []
-  btns_arr.append(['add', enc_callback_data(divider, 'setup_curr', 'add')])
-  btns_arr.append(['delete', enc_callback_data(divider, 'setup_curr', 'del')])
+  btns_arr.append(['add', enc_callback_data(divider, 'curr_setup', 'add')])
+  btns_arr.append(['delete', enc_callback_data(divider, 'curr_setup', 'del')])
   return get_btns_in_rows(2, btns_arr)
