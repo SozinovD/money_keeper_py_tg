@@ -159,7 +159,7 @@ def callback_inline(call):
 
   if data_marker == 'curr_setup':
     if data_body_arr[0] == 'add':
-      line = 'Input 3-letter currency identificator, for example\nUSD'
+      line = 'Input currency identificator, for example\nUSD'
       bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line)
       bot.register_next_step_handler(message, add_curr_handler)
     else:
