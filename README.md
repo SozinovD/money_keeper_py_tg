@@ -73,6 +73,6 @@
 * user_id (кто прислал запись)
 * category (ссыль на одну из категорий)
 * date (таймштамп)
-* currency (RUR\USD\KTG)
+* currency (RUB\USD\KTG)
 * amount (int)
 * comment (произвольная строка до 100 символов)
