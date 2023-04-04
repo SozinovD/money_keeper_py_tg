@@ -32,4 +32,7 @@ def get_today_rate(curr1, curr2):
   return get_rate(curr1, curr2, 'latest')
 
 # if __name__ == '__main__':
+# # provoking error
 #   print(get_today_rate('aff', 'usd'))
+# # normal usage
+#   print(get_today_rate('eur', 'usd'))
