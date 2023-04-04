@@ -24,8 +24,12 @@ def get_rate(curr1, curr2, date):
         break
     if rate.status_code == 200:
       break
-
+  if rate.status_code != 200:
+    return 'Not found'
   return rate.json()[curr2]
 
 def get_today_rate(curr1, curr2):
   return get_rate(curr1, curr2, 'latest')
+
+# if __name__ == '__main__':
+#   print(get_today_rate('aff', 'usd'))
