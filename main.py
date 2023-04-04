@@ -143,7 +143,7 @@ def callback_inline(call):
     if data_marker == 'a_r_curr':
       new_rec_glob[0].set_currency(data_body_arr[0])
     else:
-      new_rec_glob[0].set_cat(classes.Category(data_marker, data_body_arr[0]))
+      new_rec_glob[0].set_category(classes.Category(data_marker, data_body_arr[0]))
 
     line = 'Input record info, example:\n' \
            '`1234 really great bananas!\n`' \
