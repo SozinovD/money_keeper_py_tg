@@ -35,10 +35,13 @@ class Record:
     self.amount = 0
     self.amount_usd = 0
 
+  def set_id(self, id: int):
+    self.id = int(id)
+
   def set_user_id(self, user_id: int):
     self.user_id = int(user_id)
 
-  def set_cat(self, category:Category):
+  def set_category(self, category:Category):
     self.category = str(category.name)
     self.type = str(category.type)
 
@@ -59,12 +62,24 @@ class Record:
 
   def get_arr(self):
     arr = []
-    arr.append(int(self.user_id))
-    arr.append(self.type)
-    arr.append(self.category)
-    arr.append(int(self.date_ts))
-    arr.append(self.comment)
-    arr.append(self.currency)
-    arr.append(float(self.amount))
-    arr.append(float(self.amount_usd))
+    arr.append(['user_id', int(self.user_id)])
+    arr.append(['type', self.type])
+    arr.append(['category', self.category])
+    arr.append(['date_ts', int(self.date_ts)])
+    arr.append(['comment', self.comment])
+    arr.append(['currency', self.currency])
+    arr.append(['amount', float(self.amount)])
+    arr.append(['amount_usd', float(self.amount_usd)])
     return arr
+
+  def get_obj_from_arr(self, arr):
+    obj = Record(arr[0])
+    obj.set_user_id(arr[1])
+    cat = Category(arr[2], arr[3])
+    obj.set_category(cat)
+    obj.set_date_ts(arr[4])
+    obj.set_comment(arr[5])
+    obj.set_currency(arr[6])
+    obj.set_amount(arr[7])
+    obj.set_amount_usd(arr[8])
+    return obj
