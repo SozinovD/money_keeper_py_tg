@@ -1,1 +1,1 @@
-telebot == 0.0.5
+aiogram == 2.25.1
