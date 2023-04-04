@@ -15,7 +15,7 @@ import currency_api_handler as currs_api
 
 import classes
 
-bot = telebot.TeleBot(api_key)
+bot = telebot.TeleBot(bot_token)
 data_divider_in_callback = '\''
 
 # I tried to use global record, but it simply didn't work
