@@ -45,7 +45,7 @@ def get_currency_btns(db_filename, divider, prefix):
   for curr in db.get_currs_arr(db_filename):
     btn_data = enc_callback_data(divider, prefix + 'curr', curr)
     btns_arr.append([curr, btn_data])
-  return get_btns_in_rows(5, btns_arr)
+  return get_btns_in_rows(3, btns_arr)
 
 def get_start_rec_add_kbrd(divider, user_id=None):
   ''' Returns default keyboard for /add_record func  '''
@@ -64,11 +64,13 @@ def get_btns_in_rows(columns_num, btn_data_arr):
     # print(counter)
     if int(counter) >= int(columns_num):
       counter = 0
+      # print('key add')
       key.add(*btn_arr)
       btn_arr = []
     counter += 1
     btn_arr.append(types.InlineKeyboardButton(text=btn[0], callback_data=btn[1]))
   if btn_arr:
+    # print('key add')
     key.add(*btn_arr)
   return key
 
