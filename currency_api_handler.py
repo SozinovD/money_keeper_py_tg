@@ -35,4 +35,5 @@ def get_today_rate(curr1, curr2):
 # # provoking error
 #   print(get_today_rate('aff', 'usd'))
 # # normal usage
+#   print(get_rate('eur', 'usd', '2022-03-21'))
 #   print(get_today_rate('eur', 'usd'))
