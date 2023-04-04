@@ -119,8 +119,8 @@ def callback_inline(call):
   for data in data_arr[1:]:
     data_body_arr.append(data)
 
-  print('data_marker', data_marker)
-  print('data_body_arr', data_body_arr)
+  # print('data_marker', data_marker)
+  # print('data_body_arr', data_body_arr)
   # print(data_body_arr)
 
   # part for /add_record START
@@ -145,9 +145,10 @@ def callback_inline(call):
     else:
       new_rec_glob[0].set_category(classes.Category(data_marker, data_body_arr[0]))
 
-    line = 'Input record info, example:\n' \
-           '`1234 really great bananas!\n`' \
-           'Means \'I just spent (or earned) 1234 ' + new_rec_glob[0].currency + ' on bananas that i really love\''
+    line = '*' + new_rec_glob[0].currency + ' = ' + str(currs_api.get_today_rate(new_rec_glob[0].currency, 'usd')) + ' USD' \
+          '*\nInput record info, example:\n' \
+          '`1200 really great bananas!\n`' \
+          'Means \n\'_I just spent (or earned) 1200 on bananas that i really love_\''
     try:
       bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line, parse_mode='Markdown', reply_markup=key)
     except Exception as e:
@@ -168,7 +169,6 @@ def callback_inline(call):
       bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line, reply_markup=key)
 
   if data_marker == 'del_curr':
-    # print('del curr', data_body_arr[0])
     line = db.del_curr(db_filename, data_body_arr[0])
     bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line)
 
