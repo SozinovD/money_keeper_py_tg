@@ -5,7 +5,7 @@ import time
 import telebot
 from telebot import types
 
-from config import api_key
+from config import bot_token
 from config import owner_id
 from config import db_filename
 
