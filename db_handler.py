@@ -186,8 +186,12 @@ def get_currs_arr(db_filename):
   return currs_arr
 
 def add_curr(db_filename, new_curr):
-  if len(new_curr) != 3:
-    return 'Curr must be 3 letters exactly'
+
+  if 2 > len(new_curr) or len(new_curr) > 5 :
+    return 'Curr identificator must be 2-5 letters'
+  if type(currs_api.get_today_rate(new_curr, 'usd')) != float:
+    return 'Couldn\'t get new currency rates for: ' + new_curr
+  
   try:
     new_curr = new_curr.upper()
     conn = sqlite3.connect(db_filename)
@@ -195,7 +199,6 @@ def add_curr(db_filename, new_curr):
     currs_arr = get_currs_arr(db_filename)
     if new_curr in currs_arr:
       return 'Curr already exists in db'
-    # print('Adding curr:', new_curr)
     c.execute('INSERT INTO currencies(name) VALUES (?)', (new_curr,))
     result = conn.commit()
     if result == None:
