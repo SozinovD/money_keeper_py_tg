@@ -163,12 +163,12 @@ def callback_inline(call):
       bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line)
       bot.register_next_step_handler(message, add_curr_handler)
     else:
-      key = funcs.get_currency_btns(db_filename, data_divider_in_callback, 's_c_')
+      key = funcs.get_currency_btns(db_filename, data_divider_in_callback, 'del_')
       line = 'Choose currency to delete'
       bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line, reply_markup=key)
 
-  if data_marker == 's_c_curr':
-    print('del curr', data_body_arr[0])
+  if data_marker == 'del_curr':
+    # print('del curr', data_body_arr[0])
     line = db.del_curr(db_filename, data_body_arr[0])
     bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line)
 
