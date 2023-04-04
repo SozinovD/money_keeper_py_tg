@@ -1,6 +1,5 @@
 import classes
 import db_handler as db
-# from telebot import types
 
 from aiogram.types import ReplyKeyboardRemove, \
     ReplyKeyboardMarkup, KeyboardButton, \
