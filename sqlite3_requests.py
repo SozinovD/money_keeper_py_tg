@@ -85,10 +85,10 @@ def add_many_records_to_db(db_filename, table, fields_arr):
 
       request = request_template.format(tbl_name=table, flds=field_names, qstn_marks=question_marks)
       c.execute(request, (values))
-    result = conn.commit()
+      result = conn.commit()
 
     if result == None:
-      result = fields
+      result = fields_arr
   except sqlite3.Error as e:
     return 'Error: ' + str(e) 
   finally:
@@ -129,15 +129,12 @@ def add_record_to_db(db_filename, table, fields):
       conn.close()
   return result
 
-
 def del_records_from_db(db_filename, table, filters):
   ''' Delete records from any table in db by filters '''
   try:
     conn = sqlite3.connect(db_filename)
     c = conn.cursor()
-    request = 'DELETE FROM ' + table + ' WHERE '
-    for filt in filters:
-      request += filt + ' '
+    request = 'DELETE FROM ' + table + ' WHERE ' + filters
     c.execute(request)
     result = conn.commit()
     if result == None:
