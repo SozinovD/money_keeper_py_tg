@@ -80,6 +80,9 @@ async def start(message):
     key = funcs.get_start_rec_add_kbrd(data_divider_in_callback, message.from_user.id)
     await bot.send_message(message.from_user.id, 'Choose type of record', reply_markup=key)
 
+  # if message.text == '/del_last_record':
+  #   key = funcs.
+
   if message.text == '/currs_setup':
     key = funcs.get_curr_setup_kbrd(data_divider_in_callback)
     await bot.send_message(message.from_user.id, 'Choose action with currencies', reply_markup=key)
