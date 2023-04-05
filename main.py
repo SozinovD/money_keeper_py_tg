@@ -28,7 +28,7 @@ new_rec_glob = []
 new_rec_glob.insert(0, classes.Record(0))
 
 def finalise_new_record(message):
-  ''' Finalise new record after before it to db '''
+  ''' Finalise new record after before writing it to db '''
 
   text = message.text
   user_id = message.from_user.id
