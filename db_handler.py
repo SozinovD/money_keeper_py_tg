@@ -4,6 +4,7 @@ import classes
 import currency_api_handler as currs_api
 from config import db_filename as db_file_name      # for tests
 
+import time
 from datetime import datetime
 import sqlite3_requests as db_requests
 
@@ -70,6 +71,17 @@ def get_last_n_recs(db_name, user_id, rec_num):
   recs_arr = get_recs_by_filter(db_name, user_id, 'AND id >= ' + str(min_num))
   return recs_arr
 
+def del_last_rec_1_hour(db_name, user_id):
+  ''' Delete last record if it was made less then hour ago '''
+  last_rec = get_last_n_recs(db_name, user_id, 1)[0]
+  # if more than 1 hour passed
+  if round(time.time(), 0) - last_rec.date_ts > 3600:
+    return 'Can\'t delete record older than 1 hour'
+  filters = 'id="' + str(last_rec.id) + '"'
+  result = db_requests.del_records_from_db(db_name, 'records', filters)
+  if result == filters:
+    result = 'Record deleted'
+  return result
 
 def get_last_rec_currency(db_name, user_id):
   ''' Return currency of last record '''
@@ -118,8 +130,8 @@ def del_curr(db_name, del_curr):
       used_currs_arr.append(rec.currency)
   if del_curr in used_currs_arr:
     return 'Can\'t delete currency that is being used in records'
-  filters_arr = [ 'name="' + del_curr + '"' ]
-  result = db_requests.del_records_from_db(db_name, 'currencies', filters_arr)[0]
+  filters = 'name="' + del_curr + '"'
+  result = db_requests.del_records_from_db(db_name, 'currencies', filters)
   return 'Currency deleted: ' + result.split('"')[1]
 
 def set_amount_usd_all_recs(db_name):
@@ -132,15 +144,17 @@ def set_amount_usd_all_recs(db_name):
     db_requests.update_records_in_db(db_name, 'records', 'amount_usd=' + str(amount_usd), 'id=' + str(rec.id))
 
 # if __name__ == '__main__':
+#   print(del_last_rec_1_hour(db_file_name, '317600836'))
+
   # print(db_requests.update_records_in_db(db_file_name, 'records', 'currency = "BTC"', 'id > 14'))
   # print(set_amount_usd_all_recs(db_file_name))
-#   curr_arr = [[['name', 'GBP']], [['name', 'DOGE']], [['name', 'USDT']]]
-#   print(db_requests.add_many_records_to_db(db_file_name, 'currencies', curr_arr))
+  # curr_arr = [[['name', 'GBP']], [['name', 'DOGE']], [['name', 'USDT']]]
+  # print(db_requests.add_many_records_to_db(db_file_name, 'currencies', curr_arr))
 #   print(del_curr(db_requests.db_file_name, 'GBP'))
-  # print(db_requests.add_curr(db_file_name, 'KZK'))
-#   print(db_requests.get_last_n_recs(db_file_name, 317600836, 3))
-#   print(db_requests.get_currs(db_file_name))
-  # print(db_requests.get_last_rec_currency(db_file_name, '317600836'))
+  # print(add_curr(db_file_name, 'KZK'))
+#   print(get_last_n_recs(db_file_name, 317600836, 3))
+#   print(get_currs(db_file_name))
+  # print(get_last_rec_currency(db_file_name, '317600836'))
 #   print(db_requests.select(db_file_name, 'records')[-1][0])
 #   print(db_requests.select(db_file_name, 'records', '*', 'user_id="123456"'))
-#   print(db_requests.get_recs_user(db_file_name, '123456'))
+#   print(get_recs_user(db_file_name, '123456'))
