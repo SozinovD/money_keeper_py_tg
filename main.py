@@ -7,7 +7,7 @@ from telebot import types
 
 from config import bot_token
 from config import owner_id
-from config import db_filename
+from config import db_filename as db_name
 
 import functions as funcs
 import db_handler as db
@@ -52,14 +52,14 @@ def finalise_new_record(message):
   amount_usd = currs_api.get_today_rate(new_rec_glob[0].currency, 'usd') * amount
   new_rec_glob[0].set_amount_usd(round(amount_usd, 2))
   new_rec_glob[0].set_comment(comment)
-  line = db.add_rec(db_filename, new_rec_glob[0])
+  line = db.add_rec(db_name, new_rec_glob[0])
   if not line:
     line = 'Record added'
   bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line)
 
 def add_curr_handler(message):
   curr_name = message.text
-  bot.send_message(message.from_user.id, db.add_curr(db_filename, curr_name))
+  bot.send_message(message.from_user.id, db.add_curr(db_name, curr_name))
 
 @bot.message_handler(content_types=['text'])
 def start(message):
@@ -86,7 +86,7 @@ def start(message):
     # bot.register_next_step_handler(message, do_show_report)  # todo: generate report
 
   if message.text == '/show_all':
-    records = db.get_recs_by_filter(db_filename, message.from_user.id)
+    records = db.get_recs_by_filter(db_name, message.from_user.id)
     if len(records) < 1:
       bot.send_message(message.from_user.id, 'You do not have records')
     else:
@@ -96,7 +96,7 @@ def start(message):
       bot.send_message(message.from_user.id, str(record.__dict__))
 
   if message.text == '/show_last_3':
-    records = db.get_last_n_recs(db_filename, message.from_user.id, 3)
+    records = db.get_last_n_recs(db_name, message.from_user.id, 3)
     if len(records) < 1:
       bot.send_message(message.from_user.id, 'You do not have records')
     else:
@@ -131,12 +131,12 @@ def callback_inline(call):
 
   if data_marker == 'start':
     line = 'Choose category'
-    key = funcs.get_cat_btns_by_type(db_filename, data_body_arr[0], data_divider_in_callback)
-    new_rec_glob[0].set_currency(db.get_last_rec_currency(db_filename, data_body_arr[1]))
+    key = funcs.get_cat_btns_by_type(db_name, data_body_arr[0], data_divider_in_callback)
+    new_rec_glob[0].set_currency(db.get_last_rec_currency(db_name, data_body_arr[1]))
     bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line, reply_markup=key)
 
   if data_marker == 'income' or data_marker == 'expense' or data_marker == 'a_r_curr':
-    key = funcs.get_currency_btns(db_filename, data_divider_in_callback, 'a_r_')
+    key = funcs.get_currency_btns(db_name, data_divider_in_callback, 'a_r_')
     back_btn_callback_data = funcs.enc_callback_data(data_divider_in_callback, 'back_to_start\'')
     key.add(types.InlineKeyboardButton(text='Back to start', callback_data=back_btn_callback_data))
     
@@ -164,18 +164,18 @@ def callback_inline(call):
       bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line)
       bot.register_next_step_handler(message, add_curr_handler)
     else:
-      key = funcs.get_currency_btns(db_filename, data_divider_in_callback, 'del_')
+      key = funcs.get_currency_btns(db_name, data_divider_in_callback, 'del_')
       line = 'Choose currency to delete'
       bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line, reply_markup=key)
 
   if data_marker == 'del_curr':
-    line = db.del_curr(db_filename, data_body_arr[0])
+    line = db.del_curr(db_name, data_body_arr[0])
     bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line)
 
 
 if __name__ == '__main__':
 
-  db_started = db.start(db_filename)
+  db_started = db.start(db_name)
   print('Start db:', db_started)
 
   bot.infinity_polling()
