@@ -60,9 +60,9 @@ def select(db_filename, table, fields='*', filters=None):
       conn.close()
   return result
 
-def add_records_to_db(db_filename, table, *fields_arr):
-  ''' fields is an array of arrys: [field_name, value]
-      'fields_arr' is a list of 'fields' arrs '''
+def add_many_records_to_db(db_filename, table, fields_arr):
+  ''' fields is an array of arrys: [field_name, value] is one key=value pair in record
+      'fields_arr' is a array of 'fields' arrs '''
   try:
     request_template = 'INSERT INTO {tbl_name} ({flds}) VALUES ({qstn_marks})'
 
@@ -72,7 +72,6 @@ def add_records_to_db(db_filename, table, *fields_arr):
       values = ''
       conn = sqlite3.connect(db_filename)
       c = conn.cursor()
-      print('db connected')
       for counter, field in enumerate(fields):
         field_names += field[0]
         question_marks += '?'
@@ -97,6 +96,40 @@ def add_records_to_db(db_filename, table, *fields_arr):
       conn.close()
   return result
 
+def add_record_to_db(db_filename, table, fields):
+  ''' fields is an array of arrys: [field_name, value] is one key=value pair in record '''
+  try:
+    request_template = 'INSERT INTO {tbl_name} ({flds}) VALUES ({qstn_marks})'
+    field_names = ''
+    question_marks = ''
+    values = ''
+    conn = sqlite3.connect(db_filename)
+    c = conn.cursor()
+    for counter, field in enumerate(fields):
+      field_names += field[0]
+      question_marks += '?'
+      values += str(field[1])
+      if counter == len(fields) - 1:
+        break
+      field_names += ', '
+      question_marks += ','
+      values +='`'
+    values = tuple(values.split('`'))
+
+    request = request_template.format(tbl_name=table, flds=field_names, qstn_marks=question_marks)
+    c.execute(request, (values))
+    result = conn.commit()
+
+    if result == None:
+      result = fields
+  except sqlite3.Error as e:
+    return 'Error: ' + str(e) 
+  finally:
+    if conn:
+      conn.close()
+  return result
+
+
 def del_records_from_db(db_filename, table, filters):
   ''' Delete records from any table in db by filters '''
   try:
@@ -116,30 +149,19 @@ def del_records_from_db(db_filename, table, filters):
       conn.close()
   return result
 
-def update_record_in_db(db_filename, table, filters, new_data):
+def update_records_in_db(db_filename, table, new_data, filters):
   ''' Update records in db by filters '''
-  # reference set_amount_usd_all_recs func
-  result = 'todo'
-  return result
-
-def set_amount_usd_all_recs(db_name):
   try:
-    recs = get_recs_all(db_name)
-    rec_data = []
-    conn = sqlite3.connect(db_name)
+    request_template = 'UPDATE {tbl} SET {data} WHERE {fltrs}'
+    conn = sqlite3.connect(db_filename)
     c = conn.cursor()
-    for rec in recs:
-      date_of_rec = datetime.utcfromtimestamp(rec.date_ts).strftime('%Y-%m-%d')
-      rec_data = []
-      rec_data.append(round(currs_api.get_rate(rec.currency , 'usd', date_of_rec) * rec.amount, 2))
-      rec_data.append(rec.id)
-      print(rec_data)
-      c.execute('Update records set amount_usd = ? where id = ?', (rec_data))
-    conn.commit()
+    request = request_template.format(tbl=table, data=new_data, fltrs=filters)
+    c.execute(request)
+    result = conn.commit()
 
   except sqlite3.Error as e:
     return 'Error: ' + str(e)
   finally:
     if conn:
       conn.close()
-  return 
+  return result

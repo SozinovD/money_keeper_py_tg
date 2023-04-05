@@ -7,6 +7,8 @@ from config import db_filename as db_file_name      # for tests
 from datetime import datetime
 import sqlite3_requests as db_requests
 
+from tables import tables_arr, default_cats_arr, default_currs_arr
+
 
 def start(db_name):
   ''' Connect to db, create if it doesn't exist, return conn obj '''
@@ -26,7 +28,7 @@ def add_rec(db_name, new_rec):
   ''' Add new record to db, return result '''
   fields_arr = new_rec.get_arr()
   print(fields_arr)
-  result = db_requests.add_records_to_db(db_name, 'records', fields_arr)
+  result = db_requests.add_record_to_db(db_name, 'records', fields_arr)
   if type(result) == type(list()):
     return 'Record added'
   else:
@@ -97,7 +99,7 @@ def add_curr(db_name, new_curr):
     return 'Currency already exists in db: ' + new_curr
 
   fields_arr = [['name', str(new_curr)]]
-  result = db_requests.add_records_to_db(db_name, 'currencies', fields_arr)
+  result = db_requests.add_record_to_db(db_name, 'currencies', fields_arr)
   if type(result) == type(list()):
     return 'Currency added: ' + result[0][1]
   else:
@@ -120,15 +122,25 @@ def del_curr(db_name, del_curr):
   result = db_requests.del_records_from_db(db_name, 'currencies', filters_arr)[0]
   return 'Currency deleted: ' + result.split('"')[1]
 
+def set_amount_usd_all_recs(db_name):
+  ''' Helps with old records without such info '''
+  recs = get_recs_all(db_name)
+  rec_data = []
+  for rec in recs:
+    date_of_rec = datetime.utcfromtimestamp(rec.date_ts).strftime('%Y-%m-%d')
+    amount_usd = round(currs_api.get_rate(rec.currency , 'usd', date_of_rec) * rec.amount, 2)
+    db_requests.update_records_in_db(db_name, 'records', 'amount_usd=' + str(amount_usd), 'id=' + str(rec.id))
+
 # if __name__ == '__main__':
-  # curr_arr = [['name', 'GBP']]
-  # print(add_records_to_db(db_file_name, 'currencies', curr_arr))
-#   print(del_curr(db_file_name, 'GBP'))
-#   print(set_amount_usd_all_recs(db_file_name))
-  # print(add_curr(db_file_name, 'KZK'))
-#   print(get_last_n_recs(db_file_name, 317600836, 3))
-#   print(get_currs(db_file_name))
-  # print(get_last_rec_currency(db_file_name, '317600836'))
-#   print(select(db_file_name, 'records')[-1][0])
-#   print(select(db_file_name, 'records', '*', 'user_id="123456"'))
-#   print(get_recs_user(db_file_name, '123456'))
+  # print(db_requests.update_records_in_db(db_file_name, 'records', 'currency = "BTC"', 'id > 14'))
+  # print(set_amount_usd_all_recs(db_file_name))
+#   curr_arr = [[['name', 'GBP']], [['name', 'DOGE']], [['name', 'USDT']]]
+#   print(db_requests.add_many_records_to_db(db_file_name, 'currencies', curr_arr))
+#   print(del_curr(db_requests.db_file_name, 'GBP'))
+  # print(db_requests.add_curr(db_file_name, 'KZK'))
+#   print(db_requests.get_last_n_recs(db_file_name, 317600836, 3))
+#   print(db_requests.get_currs(db_file_name))
+  # print(db_requests.get_last_rec_currency(db_file_name, '317600836'))
+#   print(db_requests.select(db_file_name, 'records')[-1][0])
+#   print(db_requests.select(db_file_name, 'records', '*', 'user_id="123456"'))
+#   print(db_requests.get_recs_user(db_file_name, '123456'))
