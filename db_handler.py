@@ -26,7 +26,7 @@ def add_rec(db_name, new_rec):
   ''' Add new record to db, return result '''
   fields_arr = new_rec.get_arr()
   print(fields_arr)
-  result = db_requests.add_record_to_db(db_name, 'records', fields_arr)
+  result = db_requests.add_records_to_db(db_name, 'records', fields_arr)
   if type(result) == type(list()):
     return 'Record added'
   else:
@@ -42,7 +42,7 @@ def get_new_rec_num(db_name):
   return new_rec_num
 
 def get_recs_all(db_name):
-  ''' Return all records from db for one user_id in array '''
+  ''' Return all records from db in array '''
   rec_all_arr = []
   recs = db_requests.select(db_name, 'records')
   new_rec = classes.Record(0)
@@ -97,7 +97,7 @@ def add_curr(db_name, new_curr):
     return 'Currency already exists in db: ' + new_curr
 
   fields_arr = [['name', str(new_curr)]]
-  result = db_requests.add_record_to_db(db_name, 'currencies', fields_arr)
+  result = db_requests.add_records_to_db(db_name, 'currencies', fields_arr)
   if type(result) == type(list()):
     return 'Currency added: ' + result[0][1]
   else:
@@ -117,12 +117,12 @@ def del_curr(db_name, del_curr):
   if del_curr in used_currs_arr:
     return 'Can\'t delete currency that is being used in records'
   filters_arr = [ 'name="' + del_curr + '"' ]
-  result = db_requests.del_record_from_db(db_name, 'currencies', filters_arr)[0]
+  result = db_requests.del_records_from_db(db_name, 'currencies', filters_arr)[0]
   return 'Currency deleted: ' + result.split('"')[1]
 
 # if __name__ == '__main__':
   # curr_arr = [['name', 'GBP']]
-  # print(add_record_to_db(db_file_name, 'currencies', curr_arr))
+  # print(add_records_to_db(db_file_name, 'currencies', curr_arr))
 #   print(del_curr(db_file_name, 'GBP'))
 #   print(set_amount_usd_all_recs(db_file_name))
   # print(add_curr(db_file_name, 'KZK'))

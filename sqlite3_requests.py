@@ -60,7 +60,7 @@ def select(db_filename, table, fields='*', filters=None):
       conn.close()
   return result
 
-def add_record_to_db(db_filename, table, *fields_arr):
+def add_records_to_db(db_filename, table, *fields_arr):
   ''' fields is an array of arrys: [field_name, value]
       'fields_arr' is a list of 'fields' arrs '''
   try:
@@ -97,7 +97,7 @@ def add_record_to_db(db_filename, table, *fields_arr):
       conn.close()
   return result
 
-def del_record_from_db(db_filename, table, filters):
+def del_records_from_db(db_filename, table, filters):
   ''' Delete records from any table in db by filters '''
   try:
     conn = sqlite3.connect(db_filename)
