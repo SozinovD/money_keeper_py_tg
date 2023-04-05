@@ -62,7 +62,7 @@ async def finalise_new_record(message):
 
 async def add_curr_handler(message):
   curr_name = message.text
-  await bot.send_message(message.from_user.id, db.add_curr(db_filename, curr_name))
+  await bot.send_message(message.from_user.id, db.add_curr(db_name, curr_name))
 
 @dp.message_handler(content_types=['text'])
 async def start(message):
@@ -134,8 +134,8 @@ async def callback_inline(call: types.CallbackQuery):
 
   if data_marker == 'start':
     line = 'Choose category'
-    key = funcs.get_cat_btns_by_type(db_filename, data_body_arr[0], data_divider_in_callback)
-    new_rec_glob[0].set_currency(db.get_last_rec_currency(db_filename, data_body_arr[1]))
+    key = funcs.get_cat_btns_by_type(db_name, data_body_arr[0], data_divider_in_callback)
+    new_rec_glob[0].set_currency(db.get_last_rec_currency(db_name))
     await bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line, reply_markup=key)
 
   if data_marker == 'income' or data_marker == 'expense' or data_marker == 'a_r_curr':
@@ -172,8 +172,7 @@ async def callback_inline(call: types.CallbackQuery):
       await bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line, reply_markup=key)
 
   if data_marker == 'del_curr':
-    # print('del curr', data_body_arr[0])
-    line = db.del_curr(db_filename, data_body_arr[0])
+    line = db.del_curr(db_name, data_body_arr[0])
     await bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line)
 
 
