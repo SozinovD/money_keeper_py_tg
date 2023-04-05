@@ -1,261 +1,123 @@
 #!/usr/bin/env python3
 
-import sqlite3
 import classes
-
 import currency_api_handler as currs_api
-
-import os
-
 from config import db_filename as db_file_name      # for tests
-from tables import tables_arr, default_cats_arr, default_currs_arr
 
 from datetime import datetime
+import sqlite3_requests as db_requests
 
-def start(db_filename):
+
+def start(db_name):
   ''' Connect to db, create if it doesn't exist, return conn obj '''
-  try:
-    conn = sqlite3.connect(db_filename)
-  except Exception as e:
-    return 'Error: ' + str(e) 
-  finally:
-    if conn:
-      conn.close()
-
-  if os.stat(db_filename).st_size == 0:
-    result = init_db(db_filename)
-    return result
-
-  return True
-
-def init_db(db_filename):
-  ''' Init db, create tables, input default values '''
-  print('Init db, filename:\'' + db_filename + '\'')
-
-  try:
-    conn = sqlite3.connect(db_filename)
-    c = conn.cursor()
-    # create tables
-    for table in tables_arr:
-      c.execute(table)
-    # insert default values
-    c.executemany('INSERT INTO categories(type, name) VALUES (?,?)', default_cats_arr)
-    for curr in default_currs_arr:
-      c.execute('INSERT INTO currencies(name) VALUES (?)', (curr,))
-
-    # make sure changes are permanent
-    conn.commit()
-    return True
-  except sqlite3.Error as e:
-    return 'Error: ' + str(e) 
-  finally:
-    if conn:
-      conn.close()
-
-def select(db_filename, table, fields='*', filters=None):
-  ''' Make SELECT request to db '''
-  try:
-    conn = sqlite3.connect(db_filename)
-    c = conn.cursor()
-    request = 'SELECT ' + fields + ' FROM ' + table
-    if not filters == None:
-      request += ' WHERE ' + filters
-    c.execute(request)
-
-    result = c.fetchall()
-  except sqlite3.Error as e:
-    return 'Error: ' + str(e) 
-  finally:
-    if conn:
-      conn.close()
-  return result
-
-def add_record_to_db(db_filename, table, fields):
-  ''' Fields is an array of arrys: [field_name, value] '''
-  try:
-    field_names = ''
-    question_marks = ''
-    values = ''
-    conn = sqlite3.connect(db_filename)
-    c = conn.cursor()
-    print('db connected')
-    for counter, field in enumerate(fields):
-      field_names += field[0]
-      question_marks += '?'
-      values += str(field[1])
-      if counter == len(fields) - 1:
-        break
-      field_names += ', '
-      question_marks += ','
-      values +='`'
-    values = tuple(values.split('`'))
-
-    request = 'INSERT INTO {tbl_name} ({flds}) VALUES ({qstn_marks})'
-    request = request.format(tbl_name=table, flds=field_names, qstn_marks=question_marks)
-    c.execute(request, (values))
-    result = conn.commit()
-
-    if result == None:
-      result = fields
-  except sqlite3.Error as e:
-    return 'Error: ' + str(e) 
-  finally:
-    if conn:
-      conn.close()
-  return result
-
-def del_record_from_db(db_filename, table, filters):
-  ''' Delete records from any table in db by filters '''
-  try:
-    conn = sqlite3.connect(db_filename)
-    c = conn.cursor()
-    request = 'DELETE FROM ' + table + ' WHERE '
-    for filt in filters:
-      request += filt + ' '
-    c.execute(request)
-    result = conn.commit()
-    if result == None:
-      result = filters
-  except sqlite3.Error as e:
-    return 'Error: ' + str(e) 
-  finally:
-    if conn:
-      conn.close()
-  return result
-
-def update_record_in_db(db_filename, table, filters, new_data):
-  ''' Update records in db by filters '''
-  result = 'todo'
-  return result
+  return db_requests.check_init(db_name)
 
 
-def get_cats_arr(db_filename):
+def get_cats_arr(db_name):
   ''' Get categories from db, return them in array '''
   cats_arr = []
-  for cat in select(db_filename, 'categories'):
+  for cat in db_requests.select(db_name, 'categories'):
     new_cat = classes.Category(cat[1], cat[2])
     cats_arr.append(new_cat)
   return cats_arr
 
 
-def add_rec(db_filename, new_rec):
+def add_rec(db_name, new_rec):
   ''' Add new record to db, return result '''
   fields_arr = new_rec.get_arr()
   print(fields_arr)
-  result = add_record_to_db(db_filename, 'records', fields_arr)
+  result = db_requests.add_record_to_db(db_name, 'records', fields_arr)
   if type(result) == type(list()):
     return 'Record added'
   else:
     return result
 
-def get_new_rec_num(db_filename):
+def get_new_rec_num(db_name):
   ''' Get last record num, return +1 '''
   try:
-    last_rec_num = select(db_filename, 'records')[-1][0]
+    last_rec_num = db_requests.select(db_name, 'records')[-1][0]
     new_rec_num = int(last_rec_num) + 1
   except Exception as e:
     new_rec_num = 1
   return new_rec_num
 
-def get_recs_all(db_filename):
+def get_recs_all(db_name):
   ''' Return all records from db for one user_id in array '''
   rec_all_arr = []
-  recs = select(db_filename, 'records')
+  recs = db_requests.select(db_name, 'records')
   new_rec = classes.Record(0)
   for rec in recs:
     rec_all_arr.append(new_rec.get_obj_from_arr(rec))
   return rec_all_arr
 
-def get_recs_by_filter(db_filename, user_id, filters=None):
+def get_recs_by_filter(db_name, user_id, filters=None):
   ''' Return record selected by 'field':'value' for one user_id in array '''
   recs_arr = []
   filt = 'user_id="' + str(user_id) + '"'
   if filters != None:
     filt += filters
-  recs = select(db_filename, 'records', '*', filt)
+  recs = db_requests.select(db_name, 'records', '*', filt)
   new_rec = classes.Record(0)
   for rec in recs:
     recs_arr.append(new_rec.get_obj_from_arr(rec))
   return recs_arr
 
-def get_last_n_recs(db_filename, user_id, rec_num):
+def get_last_n_recs(db_name, user_id, rec_num):
   recs_arr = []
-  min_num = get_new_rec_num(db_filename) - rec_num
-  recs_arr = get_recs_by_filter(db_filename, user_id, 'AND id >= ' + str(min_num))
+  min_num = get_new_rec_num(db_name) - rec_num
+  recs_arr = get_recs_by_filter(db_name, user_id, 'AND id >= ' + str(min_num))
   return recs_arr
 
-def set_amount_usd_all_recs(db_filename):
-  try:
-    recs = get_recs_all(db_filename)
-    rec_data = []
-    conn = sqlite3.connect(db_filename)
-    c = conn.cursor()
-    for rec in recs:
-      date_of_rec = datetime.utcfromtimestamp(rec.date_ts).strftime('%Y-%m-%d')
-      rec_data = []
-      rec_data.append(round(currs_api.get_rate(rec.currency , 'usd', date_of_rec) * rec.amount, 2))
-      rec_data.append(rec.id)
-      print(rec_data)
-      c.execute('Update records set amount_usd = ? where id = ?', (rec_data))
-    conn.commit()
 
-  except sqlite3.Error as e:
-    return 'Error: ' + str(e)
-  finally:
-    if conn:
-      conn.close()
-  return 
-
-
-def get_last_rec_currency(db_filename, user_id):
+def get_last_rec_currency(db_name, user_id):
   ''' Return currency of last record '''
   filt = 'user_id="' + str(user_id) + '"'
   try:
-    result = select(db_filename, 'records', 'currency', filt)[-1][0]
+    result = db_requests.select(db_name, 'records', 'currency', filt)[-1][0]
     return result
   except Exception as e:
     print(e)
     return 'USD'
 
-def get_currs_arr(db_filename):
+def get_currs_arr(db_name):
   currs_arr = []
-  result = select(db_filename, 'currencies', 'name')
+  result = db_requests.select(db_name, 'currencies', 'name')
   for curr in result:
     currs_arr.append(curr[0])
   return currs_arr
 
-def add_curr(db_filename, new_curr):
+def add_curr(db_name, new_curr):
   ''' Add currency into db '''
   new_curr = new_curr.upper()
   if 2 > len(new_curr) or len(new_curr) > 5 :
     return 'Curr identificator must be 2-5 letters'
   if type(currs_api.get_today_rate(new_curr, 'usd')) != float:
     return 'Couldn\'t get new currency rates for: ' + new_curr
-  if new_curr in get_currs_arr(db_filename):
+  if new_curr in get_currs_arr(db_name):
     return 'Currency already exists in db: ' + new_curr
 
   fields_arr = [['name', str(new_curr)]]
-  result = add_record_to_db(db_filename, 'currencies', fields_arr)
+  result = db_requests.add_record_to_db(db_name, 'currencies', fields_arr)
   if type(result) == type(list()):
     return 'Currency added: ' + result[0][1]
   else:
     return result
 
-def del_curr(db_filename, del_curr):
+def del_curr(db_name, del_curr):
   ''' Delete curr from bd. Don't touch default or if there are records containing it '''
   del_curr = del_curr.upper()
-  if not del_curr in get_currs_arr(db_filename):
+  if not del_curr in get_currs_arr(db_name):
     return 'Currency not found in db: ' + del_curr
   if del_curr in default_currs_arr:
     return 'Can\'t delete default currency'
   used_currs_arr = []
-  for rec in get_recs_all(db_filename):
+  for rec in get_recs_all(db_name):
     if not rec.currency in used_currs_arr:
       used_currs_arr.append(rec.currency)
   if del_curr in used_currs_arr:
     return 'Can\'t delete currency that is being used in records'
   filters_arr = [ 'name="' + del_curr + '"' ]
-  result = del_record_from_db(db_filename, 'currencies', filters_arr)[0]
+  result = db_requests.del_record_from_db(db_name, 'currencies', filters_arr)[0]
   return 'Currency deleted: ' + result.split('"')[1]
 
 # if __name__ == '__main__':

@@ -4,7 +4,7 @@ import time
 
 from config import bot_token
 from config import owner_id
-from config import db_filename
+from config import db_filename as db_name
 
 import functions as funcs
 import db_handler as db
@@ -31,7 +31,7 @@ new_rec_glob = []
 new_rec_glob.insert(0, classes.Record(0))
 
 async def finalise_new_record(message):
-  ''' Finalise new record after before it to db '''
+  ''' Finalise new record before writing it to db '''
 
   text = message.text
   user_id = message.from_user.id
@@ -55,7 +55,7 @@ async def finalise_new_record(message):
   amount_usd = currs_api.get_today_rate(new_rec_glob[0].currency, 'usd') * amount
   new_rec_glob[0].set_amount_usd(round(amount_usd, 2))
   new_rec_glob[0].set_comment(comment)
-  line = db.add_rec(db_filename, new_rec_glob[0])
+  line = db.add_rec(db_name, new_rec_glob[0])
   if not line:
     line = 'Record added'
   await bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line)
@@ -89,7 +89,7 @@ async def start(message):
     # bot.register_next_step_handler(message, do_show_report)  # todo: generate report
 
   if message.text == '/show_all':
-    records = db.get_recs_by_filter(db_filename, message.from_user.id)
+    records = db.get_recs_by_filter(db_name, message.from_user.id)
     if len(records) < 1:
       await bot.send_message(message.from_user.id, 'You do not have records')
     else:
@@ -99,7 +99,7 @@ async def start(message):
       await bot.send_message(message.from_user.id, str(record.__dict__))
 
   if message.text == '/show_last_3':
-    records = db.get_last_n_recs(db_filename, message.from_user.id, 3)
+    records = db.get_last_n_recs(db_name, message.from_user.id, 3)
     if len(records) < 1:
       await bot.send_message(message.from_user.id, 'You do not have records')
     else:
@@ -126,7 +126,6 @@ async def callback_inline(call: types.CallbackQuery):
   # print('data_marker', data_marker)
   # print('data_body_arr', data_body_arr)
 
-
 #   # part for /add_record START
   if data_marker == 'back_to_start':
     line = 'Choose type of record'
@@ -140,7 +139,7 @@ async def callback_inline(call: types.CallbackQuery):
     await bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line, reply_markup=key)
 
   if data_marker == 'income' or data_marker == 'expense' or data_marker == 'a_r_curr':
-    key = funcs.get_currency_btns(db_filename, data_divider_in_callback, 'a_r_')
+    key = funcs.get_currency_btns(db_name, data_divider_in_callback, 'a_r_')
     back_btn_callback_data = funcs.enc_callback_data(data_divider_in_callback, 'back_to_start\'')
     key.add(types.InlineKeyboardButton(text='Back to start', callback_data=back_btn_callback_data))
     
@@ -168,7 +167,7 @@ async def callback_inline(call: types.CallbackQuery):
       await bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line)
       bot.register_next_step_handler(message, add_curr_handler)
     else:
-      key = funcs.get_currency_btns(db_filename, data_divider_in_callback, 'del_')
+      key = funcs.get_currency_btns(db_name, data_divider_in_callback, 'del_')
       line = 'Choose currency to delete'
       await bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line, reply_markup=key)
 
@@ -180,7 +179,7 @@ async def callback_inline(call: types.CallbackQuery):
 
 if __name__ == '__main__':
 
-  db_started = db.start(db_filename)
+  db_started = db.start(db_name)
   print('Start db:', db_started)
 
   executor.start_polling(dp)

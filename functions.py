@@ -60,12 +60,10 @@ def get_start_rec_add_kbrd(divider, user_id=None):
 
 def get_btns_in_rows(columns_num, btn_data_arr):
   ''' Return keyboard that is sorted in rows and columns '''
-  # print('Columns:', columns_num)
   counter = 0
   btn_arr = []
   key = InlineKeyboardMarkup()
   for btn in btn_data_arr:
-    # print(counter)
     if int(counter) >= int(columns_num):
       counter = 0
       key.row(*btn_arr)
