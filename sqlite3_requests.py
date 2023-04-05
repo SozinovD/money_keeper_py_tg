@@ -60,9 +60,9 @@ def select(db_filename, table, fields='*', filters=None):
       conn.close()
   return result
 
-def add_records_to_db(db_filename, table, *fields_arr):
-  ''' fields is an array of arrys: [field_name, value]
-      'fields_arr' is a list of 'fields' arrs '''
+def add_many_records_to_db(db_filename, table, fields_arr):
+  ''' fields is an array of arrys: [field_name, value] is one key=value pair in record
+      'fields_arr' is a array of 'fields' arrs '''
   try:
     request_template = 'INSERT INTO {tbl_name} ({flds}) VALUES ({qstn_marks})'
 
@@ -72,7 +72,6 @@ def add_records_to_db(db_filename, table, *fields_arr):
       values = ''
       conn = sqlite3.connect(db_filename)
       c = conn.cursor()
-      print('db connected')
       for counter, field in enumerate(fields):
         field_names += field[0]
         question_marks += '?'
@@ -96,6 +95,40 @@ def add_records_to_db(db_filename, table, *fields_arr):
     if conn:
       conn.close()
   return result
+
+def add_record_to_db(db_filename, table, fields):
+  ''' fields is an array of arrys: [field_name, value] is one key=value pair in record '''
+  try:
+    request_template = 'INSERT INTO {tbl_name} ({flds}) VALUES ({qstn_marks})'
+    field_names = ''
+    question_marks = ''
+    values = ''
+    conn = sqlite3.connect(db_filename)
+    c = conn.cursor()
+    for counter, field in enumerate(fields):
+      field_names += field[0]
+      question_marks += '?'
+      values += str(field[1])
+      if counter == len(fields) - 1:
+        break
+      field_names += ', '
+      question_marks += ','
+      values +='`'
+    values = tuple(values.split('`'))
+
+    request = request_template.format(tbl_name=table, flds=field_names, qstn_marks=question_marks)
+    c.execute(request, (values))
+    result = conn.commit()
+
+    if result == None:
+      result = fields
+  except sqlite3.Error as e:
+    return 'Error: ' + str(e) 
+  finally:
+    if conn:
+      conn.close()
+  return result
+
 
 def del_records_from_db(db_filename, table, filters):
   ''' Delete records from any table in db by filters '''

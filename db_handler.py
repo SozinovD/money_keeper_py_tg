@@ -7,6 +7,8 @@ from config import db_filename as db_file_name      # for tests
 from datetime import datetime
 import sqlite3_requests as db_requests
 
+from tables import tables_arr, default_cats_arr, default_currs_arr
+
 
 def start(db_name):
   ''' Connect to db, create if it doesn't exist, return conn obj '''
@@ -26,7 +28,7 @@ def add_rec(db_name, new_rec):
   ''' Add new record to db, return result '''
   fields_arr = new_rec.get_arr()
   print(fields_arr)
-  result = db_requests.add_records_to_db(db_name, 'records', fields_arr)
+  result = db_requests.add_record_to_db(db_name, 'records', fields_arr)
   if type(result) == type(list()):
     return 'Record added'
   else:
@@ -97,7 +99,7 @@ def add_curr(db_name, new_curr):
     return 'Currency already exists in db: ' + new_curr
 
   fields_arr = [['name', str(new_curr)]]
-  result = db_requests.add_records_to_db(db_name, 'currencies', fields_arr)
+  result = db_requests.add_record_to_db(db_name, 'currencies', fields_arr)
   if type(result) == type(list()):
     return 'Currency added: ' + result[0][1]
   else:
@@ -121,8 +123,8 @@ def del_curr(db_name, del_curr):
   return 'Currency deleted: ' + result.split('"')[1]
 
 # if __name__ == '__main__':
-  # curr_arr = [['name', 'GBP']]
-  # print(add_records_to_db(db_file_name, 'currencies', curr_arr))
+#   curr_arr = [[['name', 'GBP']], [['name', 'DOGE']], [['name', 'USDT']]]
+#   print(db_requests.add_many_records_to_db(db_file_name, 'currencies', curr_arr))
 #   print(del_curr(db_file_name, 'GBP'))
 #   print(set_amount_usd_all_recs(db_file_name))
   # print(add_curr(db_file_name, 'KZK'))
