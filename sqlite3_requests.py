@@ -149,30 +149,19 @@ def del_records_from_db(db_filename, table, filters):
       conn.close()
   return result
 
-def update_record_in_db(db_filename, table, filters, new_data):
+def update_records_in_db(db_filename, table, new_data, filters):
   ''' Update records in db by filters '''
-  # reference set_amount_usd_all_recs func
-  result = 'todo'
-  return result
-
-def set_amount_usd_all_recs(db_name):
   try:
-    recs = get_recs_all(db_name)
-    rec_data = []
-    conn = sqlite3.connect(db_name)
+    request_template = 'UPDATE {tbl} SET {data} WHERE {fltrs}'
+    conn = sqlite3.connect(db_filename)
     c = conn.cursor()
-    for rec in recs:
-      date_of_rec = datetime.utcfromtimestamp(rec.date_ts).strftime('%Y-%m-%d')
-      rec_data = []
-      rec_data.append(round(currs_api.get_rate(rec.currency , 'usd', date_of_rec) * rec.amount, 2))
-      rec_data.append(rec.id)
-      print(rec_data)
-      c.execute('Update records set amount_usd = ? where id = ?', (rec_data))
-    conn.commit()
+    request = request_template.format(tbl=table, data=new_data, fltrs=filters)
+    c.execute(request)
+    result = conn.commit()
 
   except sqlite3.Error as e:
     return 'Error: ' + str(e)
   finally:
     if conn:
       conn.close()
-  return 
+  return result
