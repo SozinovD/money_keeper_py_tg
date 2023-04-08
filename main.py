@@ -96,7 +96,7 @@ def start(message):
       bot.send_message(message.from_user.id, 'Sending all your records')
     for record in records:
       print(record)
-      bot.send_message(message.from_user.id, str(record.__dict__))
+      bot.send_message(message.from_user.id, funcs.make_rec_readable(record))
 
   if message.text == '/show_last_3':
     records = db.get_last_n_recs(db_name, message.from_user.id, 3)
@@ -106,7 +106,7 @@ def start(message):
       bot.send_message(message.from_user.id, 'Sending your 3 last records')
     for record in records:
       print(record)
-      bot.send_message(message.from_user.id, str(record.__dict__))
+      bot.send_message(message.from_user.id, funcs.make_rec_readable(record))
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
@@ -122,8 +122,8 @@ def callback_inline(call):
   for data in data_arr[1:]:
     data_body_arr.append(data)
 
-  print('data_marker', data_marker)
-  print('data_body_arr', data_body_arr)
+  # print('data_marker', data_marker)
+  # print('data_body_arr', data_body_arr)
   # print(data_body_arr)
 
   # part for /add_record START
@@ -149,7 +149,6 @@ def callback_inline(call):
       new_cat.set_name(data_body_arr[0])
       new_cat.set_type(data_marker)
       new_rec_glob[0].set_category(new_cat)
-      print('category', new_rec_glob[0].category)
 
     line = '*' + new_rec_glob[0].currency + ' = ' + str(currs_api.get_today_rate(new_rec_glob[0].currency, 'usd')) + ' USD' \
           '*\nInput record info, example:\n' \
