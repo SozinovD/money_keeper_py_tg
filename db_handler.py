@@ -39,11 +39,11 @@ def add_rec(db_name, new_rec):
   else:
     return result
 
-def del_last_rec_1_hour(db_name, user_id):
+def del_last_rec_1_hour(db_name, user_id, forced = False):
   ''' Delete last record if it was made less then hour ago '''
   last_rec = get_last_n_recs(db_name, user_id, 1)[0]
   # if more than 1 hour passed
-  if round(time.time(), 0) - last_rec.date_ts > 3600:
+  if round(time.time(), 0) - last_rec.date_ts > 3600 or forced != False:
     return 'Can\'t delete record older than 1 hour'
   filters = 'id="' + str(last_rec.id) + '"'
   result = db_requests.del_records_from_db(db_name, 'records', filters)
