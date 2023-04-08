@@ -5,10 +5,12 @@
 
 Команды боту:
 
-* /help - show help page
-* /add_record - add new income or expense record
-* /currs_setup - setup currencies
-* /generate_report - generate report (will be avalible in v2 and above)
+* help - show help page
+* add_record - add new income or expense record
+* del_last_record - delete last record that is not older than 1 hour
+* currs_setup - setup currencies
+* cats_setup - setup categories
+* generate_report - generate report (will be avalible in v2 and above)
 
 ## Разбивка фич по версиям
 ### v1: !DONE!

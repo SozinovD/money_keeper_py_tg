@@ -28,7 +28,7 @@ data_divider_in_callback = '\''
 # new_rec_glob[1] and new_rec_glob[1] are needed to remember message to edit
 global new_rec_glob
 new_rec_glob = []
-new_rec_glob.insert(0, classes.Record(0))
+new_rec_glob.insert(0, classes.Record())
 
 async def finalise_new_record(message):
   ''' Finalise new record before writing it to db '''
@@ -55,9 +55,12 @@ async def finalise_new_record(message):
   amount_usd = currs_api.get_today_rate(new_rec_glob[0].currency, 'usd') * amount
   new_rec_glob[0].set_amount_usd(round(amount_usd, 2))
   new_rec_glob[0].set_comment(comment)
-  line = db.add_rec(db_name, new_rec_glob[0])
-  if not line:
-    line = 'Record added'
+  print('ADD REC', new_rec_glob[0])
+  result = db.add_rec(db_name, new_rec_glob[0])
+  if type(result) == type(classes.Record()):
+    line = 'Record added:\n\n' + funcs.make_rec_readable(result)
+  else:
+    line = str(result)
   await bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line)
 
 async def add_curr_handler(message):
@@ -88,9 +91,21 @@ async def start(message):
     key = funcs.get_btns_in_rows(1, [['Sure, delete this record', btn_callback]])
     await bot.send_message(message.from_user.id, line, reply_markup=key)
 
+  if message.text == '/del_last_record':
+    record_obj = db.get_last_n_recs(db_name, message.from_user.id, 1)[0]
+    bot.send_message(message.from_user.id, funcs.make_rec_readable(record_obj))
+    line = 'Are you sure you want to delete this record?'
+    btn_callback = funcs.enc_callback_data(data_divider_in_callback, 'del_last_rec', message.from_user.id)
+    key = funcs.get_btns_in_rows(1, [['Sure, delete this record', btn_callback]])
+    bot.send_message(message.from_user.id, line, reply_markup=key)
+
   if message.text == '/currs_setup':
     key = funcs.get_curr_setup_kbrd(data_divider_in_callback)
     await bot.send_message(message.from_user.id, 'Choose action with currencies', reply_markup=key)
+
+  if message.text == '/cats_setup':
+    key = funcs.get_cats_setup_kbrd(data_divider_in_callback)
+    bot.send_message(message.from_user.id, 'Choose action with categories', reply_markup=key)
 
   if message.text == '/generate_report':
     await bot.send_message(message.from_user.id, 'Feature is not ready yet')
@@ -148,13 +163,15 @@ async def callback_inline(call: types.CallbackQuery):
 
   if data_marker == 'income' or data_marker == 'expense' or data_marker == 'a_r_curr':
     key = funcs.get_currency_btns(db_name, data_divider_in_callback, 'a_r_')
-    back_btn_callback_data = funcs.enc_callback_data(data_divider_in_callback, 'back_to_start\'')
-    key.add(types.InlineKeyboardButton(text='Back to start', callback_data=back_btn_callback_data))
-    
+    # key.add(types.InlineKeyboardButton(text='Back to start', callback_data=back_btn_callback_data))
+
     if data_marker == 'a_r_curr':
       new_rec_glob[0].set_currency(data_body_arr[0])
     else:
-      new_rec_glob[0].set_category(classes.Category(data_marker, data_body_arr[0]))
+      new_cat = classes.Category()
+      new_cat.set_name(data_body_arr[0])
+      new_cat.set_type(data_marker)
+      new_rec_glob[0].set_category(new_cat)
 
     line = '*' + new_rec_glob[0].currency + ' = ' + str(currs_api.get_today_rate(new_rec_glob[0].currency, 'usd')) + ' USD' \
           '*\nInput record info, example:\n' \
