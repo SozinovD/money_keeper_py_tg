@@ -7,9 +7,9 @@ class Category():
   name: str   # any name
   
   def __init__(self):
-    self.name = 'No'
-    self.type = 'No'
-    
+    self.name = 'No name'
+    self.type = 'No type'
+
   def set_name(self, name: str):
     self.name = str(name)
   def set_type(self, type: str):
