@@ -18,19 +18,23 @@ def start(db_name):
 def get_cats_arr(db_name):
   ''' Get categories from db, return them in array '''
   cats_arr = []
-  for cat in db_requests.select(db_name, 'categories'):
-    new_cat = classes.Category(cat[1], cat[2])
+  for cat in db_requests.select(db_name, 'categories', 'name, type'):
+    new_cat = classes.Category()
+    new_cat.set_name(cat[0])
+    new_cat.set_type(cat[1])
     cats_arr.append(new_cat)
   return cats_arr
-
 
 def add_rec(db_name, new_rec):
   ''' Add new record to db, return result '''
   fields_arr = new_rec.get_arr()
-  print(fields_arr)
+  # print(fields_arr)
   result = db_requests.add_record_to_db(db_name, 'records', fields_arr)
   if type(result) == type(list()):
-    return 'Record added'
+    last_rec = get_last_n_recs(db_name, fields_arr[0][1], 1)[0]
+    # print('last_rec', last_rec)
+    new_rec.set_id(last_rec.id)
+    return new_rec
   else:
     return result
 
@@ -47,7 +51,7 @@ def get_recs_all(db_name):
   ''' Return all records from db in array '''
   rec_all_arr = []
   recs = db_requests.select(db_name, 'records')
-  new_rec = classes.Record(0)
+  new_rec = classes.Record()
   for rec in recs:
     rec_all_arr.append(new_rec.get_obj_from_arr(rec))
   return rec_all_arr
@@ -59,7 +63,7 @@ def get_recs_by_filter(db_name, user_id, filters=None):
   if filters != None:
     filt += filters
   recs = db_requests.select(db_name, 'records', '*', filt)
-  new_rec = classes.Record(0)
+  new_rec = classes.Record()
   for rec in recs:
     recs_arr.append(new_rec.get_obj_from_arr(rec))
   return recs_arr
@@ -84,6 +88,7 @@ def get_last_rec_currency(db_name, user_id):
 def get_currs_arr(db_name):
   currs_arr = []
   result = db_requests.select(db_name, 'currencies', 'name')
+  print('get_currs_arr', result)
   for curr in result:
     currs_arr.append(curr[0])
   return currs_arr

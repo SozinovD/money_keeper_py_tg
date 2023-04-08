@@ -1,6 +1,7 @@
 import classes
 import db_handler as db
 from telebot import types
+from datetime import datetime
 
 help_msg = '''
 This bot helps you to track your money usage
@@ -10,6 +11,10 @@ There are commands below:
 /add_record - add new income or expense record
 /show_report - generate report (will be avalible in v2 and above)
 '''
+
+def get_back_to_start_btn(divider):
+  ''' Return btn with callback data that tells to go to start '''
+  return types.InlineKeyboardButton(text='Back to start', callback_data=enc_callback_data(divider, 'back_to_start', '.'))
 
 def get_help_msg():
   ''' Just return help msg '''
@@ -36,8 +41,9 @@ def get_cat_btns_by_type(db_filename, cat_type, divider):
     if cat.type == cat_type:
       btn_data = enc_callback_data(divider, cat_type, cat.name)
       btns_arr.append([cat.name, btn_data])
-  btns_arr.append(['Back to start', 'back_to_start', '.'])
-  return get_btns_in_rows(2, btns_arr)
+  btns = get_btns_in_rows(2, btns_arr)
+  btns.add(get_back_to_start_btn(divider))
+  return btns
 
 def get_currency_btns(db_filename, divider, prefix):
   ''' Return keyboard with currencies ready to be used in msg '''
@@ -45,7 +51,10 @@ def get_currency_btns(db_filename, divider, prefix):
   for curr in db.get_currs_arr(db_filename):
     btn_data = enc_callback_data(divider, prefix + 'curr', curr)
     btns_arr.append([curr, btn_data])
-  return get_btns_in_rows(6, btns_arr)
+  btns = get_btns_in_rows(6, btns_arr)
+  btns.add(get_back_to_start_btn(divider))
+  return btns
+
 
 def get_start_rec_add_kbrd(divider, user_id=None):
   ''' Returns default keyboard for /add_record func  '''
@@ -76,3 +85,20 @@ def get_curr_setup_kbrd(divider):
   btns_arr.append(['add', enc_callback_data(divider, 'curr_setup', 'add')])
   btns_arr.append(['delete', enc_callback_data(divider, 'curr_setup', 'del')])
   return get_btns_in_rows(2, btns_arr)
+
+def make_rec_readable(rec):
+  ''' Make readable line with record info '''
+  line_template = 'id = {id}\n' \
+                  'type: {type}\n' \
+                  'category: {cat}\n' \
+                  'date UTC: {date}\n' \
+                  'currency: {curr}\n' \
+                  'ammount: {amount}\n' \
+                  'amount USD: {amount_usd}\n' \
+                  'comment: {comment}'
+
+  line = line_template.format(id=rec.id, type=rec.type, cat=rec.category,
+                              date=datetime.utcfromtimestamp(rec.date_ts).strftime('%Y-%m-%d %H:%M:%S'),
+                              curr=rec.currency, amount=rec.amount, amount_usd=rec.amount_usd,
+                              comment=rec.comment )
+  return line

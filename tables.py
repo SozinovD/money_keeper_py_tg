@@ -21,7 +21,7 @@ table_rec = '''CREATE TABLE records
 
 tables_arr = [ table_cat, table_curr, table_rec ]
 
-default_cats_arr = [['Salary', 'income'], ['Sell', 'income'], ['Other', 'income'], \
-                    ['Food', 'expense'], ['Clothes', 'expense'],  ['Fun', 'expense'], ['Other', 'expense']]
+default_cats_arr = [['income', 'Salary'], ['income', 'Sell'], ['income', 'Other'], \
+                    ['expense', 'Food'], ['expense', 'Clothes'],  ['expense','Fun'], ['expense', 'Other']]
 
 default_currs_arr = ['USD', 'RUB', 'KZT', 'DKK']

@@ -5,30 +5,36 @@ class Category():
   ''' Class for income\expense categories '''
   type: str   # income\expense
   name: str   # any name
-
-  def __init__(self, name: str, type: str):
-    self.type = str(type)
+  
+  def __init__(self):
+    self.name = 'No'
+    self.type = 'No'
+    
+  def set_name(self, name: str):
     self.name = str(name)
+  def set_type(self, type: str):
+    self.type = str(type)
+  
 
 
 @dataclass
 class Record:
   ''' Class for db records '''
-  id: int           # sequential number
-  user_id: int      # user that sent this record
-  type: str         # type of record. Usually income or expense
-  category: str     # a category name
-  date_ts: int      # when record was done
-  comment: str      # a comment for record
-  currency: str     # tree-letters currency code
-  amount: float     # amount for this record
-  amount_usd: float # amount for this record
+  id: int               # sequential number
+  user_id: int          # user that sent this record
+  type: str             # type of record. Usually income or expense
+  category: Category()  # a category name
+  date_ts: int          # when record was done
+  comment: str          # a comment for record
+  currency: str         # tree-letters currency code
+  amount: float         # amount for this record
+  amount_usd: float     # amount for this record
 
-  def __init__(self, id: int):
-    self.id = int(id)
+  def __init__(self):
+    self.id = 0
     self.user_id = ''
     self.type = ''
-    self.category = ''
+    self.category = Category()
     self.date_ts = ''
     self.comment = ''
     self.currency = 'USD'
@@ -73,9 +79,14 @@ class Record:
     return arr
 
   def get_obj_from_arr(self, arr):
-    obj = Record(arr[0])
+    obj = Record()
+    obj.set_id(arr[0])
     obj.set_user_id(arr[1])
-    cat = Category(arr[2], arr[3])
+
+    cat = Category()
+    cat.set_name(arr[2])
+    cat.set_type(arr[3])
+    
     obj.set_category(cat)
     obj.set_date_ts(arr[4])
     obj.set_comment(arr[5])
