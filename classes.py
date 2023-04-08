@@ -13,6 +13,9 @@ class Category():
   def set_name(self, name: str):
     self.name = str(name)
   def set_type(self, type: str):
+    if type != 'income' and type != 'expense':
+      line = 'ERROR: unsupported category type: ' + type
+      return line
     self.type = str(type)
   
 
