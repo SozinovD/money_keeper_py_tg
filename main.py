@@ -92,6 +92,10 @@ def start(message):
     key = funcs.get_curr_setup_kbrd(data_divider_in_callback)
     bot.send_message(message.from_user.id, 'Choose action with currencies', reply_markup=key)
 
+  if message.text == '/cats_setup':
+    key = funcs.get_cats_setup_kbrd(data_divider_in_callback)
+    bot.send_message(message.from_user.id, 'Choose action with categories', reply_markup=key)
+
   if message.text == '/generate_report':
     bot.send_message(message.from_user.id, 'Feature is not ready yet')
     # bot.register_next_step_handler(message, do_show_report)  # todo: generate report
@@ -188,6 +192,7 @@ def callback_inline(call):
   if data_marker == 'del_last_rec':
     result = db.del_last_rec_1_hour(db_name, data_body_arr[0])
     bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=result)
+
 
 
 if __name__ == '__main__':
