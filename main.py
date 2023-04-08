@@ -153,7 +153,7 @@ def callback_inline(call):
   if data_marker == 'income' or data_marker == 'expense' or data_marker == 'a_r_curr':
     key = funcs.get_currency_btns(db_name, data_divider_in_callback, 'a_r_')
     # key.add(types.InlineKeyboardButton(text='Back to start', callback_data=back_btn_callback_data))
-    
+
     if data_marker == 'a_r_curr':
       new_rec_glob[0].set_currency(data_body_arr[0])
     else:
