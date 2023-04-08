@@ -88,7 +88,6 @@ def start(message):
     key = funcs.get_btns_in_rows(1, [['Sure, delete this record', btn_callback]])
     bot.send_message(message.from_user.id, line, reply_markup=key)
 
-
   if message.text == '/currs_setup':
     key = funcs.get_curr_setup_kbrd(data_divider_in_callback)
     bot.send_message(message.from_user.id, 'Choose action with currencies', reply_markup=key)
