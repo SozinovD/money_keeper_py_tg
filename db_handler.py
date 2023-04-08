@@ -9,6 +9,7 @@ import sqlite3_requests as db_requests
 
 from tables import tables_arr, default_cats_arr, default_currs_arr
 
+import time
 
 def start(db_name):
   ''' Connect to db, create if it doesn't exist, return conn obj '''
@@ -37,6 +38,18 @@ def add_rec(db_name, new_rec):
     return new_rec
   else:
     return result
+
+def del_last_rec_1_hour(db_name, user_id):
+  ''' Delete last record if it was made less then hour ago '''
+  last_rec = get_last_n_recs(db_name, user_id, 1)[0]
+  # if more than 1 hour passed
+  if round(time.time(), 0) - last_rec.date_ts > 3600:
+    return 'Can\'t delete record older than 1 hour'
+  filters = 'id="' + str(last_rec.id) + '"'
+  result = db_requests.del_records_from_db(db_name, 'records', filters)
+  if result == filters:
+    result = 'Record deleted'
+  return result
 
 def get_new_rec_num(db_name):
   ''' Get last record num, return +1 '''
@@ -88,7 +101,6 @@ def get_last_rec_currency(db_name, user_id):
 def get_currs_arr(db_name):
   currs_arr = []
   result = db_requests.select(db_name, 'currencies', 'name')
-  print('get_currs_arr', result)
   for curr in result:
     currs_arr.append(curr[0])
   return currs_arr
