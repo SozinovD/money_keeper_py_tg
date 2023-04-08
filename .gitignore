@@ -5,3 +5,4 @@ tips.txt
 *.db
 nohup.out
 *.sh
+tests/*
