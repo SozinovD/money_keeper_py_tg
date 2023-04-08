@@ -80,8 +80,13 @@ async def start(message):
     key = funcs.get_start_rec_add_kbrd(data_divider_in_callback, message.from_user.id)
     await bot.send_message(message.from_user.id, 'Choose type of record', reply_markup=key)
 
-  # if message.text == '/del_last_record':
-  #   key = funcs.
+  if message.text == '/del_last_record':
+    record_obj = db.get_last_n_recs(db_name, message.from_user.id, 1)[0]
+    await bot.send_message(message.from_user.id, str(record_obj))
+    line = 'Are you sure you want to delete this record?'
+    btn_callback = funcs.enc_callback_data(data_divider_in_callback, 'del_last_rec', message.from_user.id)
+    key = funcs.get_btns_in_rows(1, [['Sure, delete this record', btn_callback]])
+    await bot.send_message(message.from_user.id, line, reply_markup=key)
 
   if message.text == '/currs_setup':
     key = funcs.get_curr_setup_kbrd(data_divider_in_callback)
@@ -178,6 +183,9 @@ async def callback_inline(call: types.CallbackQuery):
     line = db.del_curr(db_name, data_body_arr[0])
     await bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=line)
 
+  if data_marker == 'del_last_rec':
+    result = db.del_last_rec_1_hour(db_name, data_body_arr[0])
+    await bot.edit_message_text(chat_id=new_rec_glob[1], message_id=new_rec_glob[2], text=result)
 
 if __name__ == '__main__':
 
